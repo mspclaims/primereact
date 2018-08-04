@@ -11,8 +11,7 @@ export class AutoCompletePanel extends Component {
         appendTo: null,
         itemTemplate: null,
         onItemClick: null,
-        scrollHeight: '200px',
-        objectsInList: false
+        scrollHeight: '200px'
     }
 
     static propTypes = {
@@ -21,14 +20,13 @@ export class AutoCompletePanel extends Component {
         appendTo: PropTypes.any,
         itemTemplate: PropTypes.func,
         onItemClick: PropTypes.func,
-        scrollHeight: PropTypes.string,
-        objectsInList: PropTypes.bool,
+        scrollHeight: PropTypes.string
     };
 
     renderElement() {
         let items;
 
-        if (this.props.suggestions && this.props.objectsInList === false) {
+        if (this.props.suggestions) {
             items = this.props.suggestions.map((suggestion, index) => {
                 let itemContent = this.props.itemTemplate ? this.props.itemTemplate(suggestion) : this.props.field ? ObjectUtils.resolveFieldData(suggestion, this.props.field) : suggestion;
 
@@ -37,31 +35,7 @@ export class AutoCompletePanel extends Component {
                 );
             });
         }
-        if (this.props.suggestions && this.props.objectsInList) {
-            items = this.props.suggestions.map((suggestion, index) => {
-                let itemContent = this.props.itemTemplate ? this.props.itemTemplate(suggestion.label) 
-                    : this.props.field ? ObjectUtils.resolveFieldData(suggestion.label, this.props.field) : suggestion.label;
 
-                if (suggestion.shift && suggestion.shift === 1) 
-                    { itemContent = "\u2514\u2500\u0020" + itemContent;}  
-                else {
-                    if (suggestion.category && 
-                        (suggestion.level === undefined || (suggestion.level && suggestion.level==='0' ))) 
-                        { itemContent +=' : ' + suggestion.category;}
-                }                              
-                var clickHandler = (e) => {
-                    return this.props.onItemClick(e, suggestion);
-                };
-                var className = 'ui-autocomplete-list-item ui-corner-all';
-                if (suggestion.value === '') {
-                    clickHandler = void(0);
-                    className +=' novalue4autocomplete'
-                }
-                return (
-                    <li key={index + '_item'} className={className} onClick={clickHandler}>{itemContent}</li>        
-                ); 
-            });
-        }
         return (
             <div ref={(el) => this.element = el} className="ui-autocomplete-panel ui-widget-content ui-corner-all ui-input-overlay ui-shadow" style={{ maxHeight: this.props.scrollHeight }}>
                 <ul className="ui-autocomplete-items ui-autocomplete-list ui-widget-content ui-widget ui-corner-all ui-helper-reset">
