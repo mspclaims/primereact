@@ -34,6 +34,10 @@ export class AutoComplete extends Component {
         size: null,
         appendTo: null,
         tabindex: null,
+        enablePaging: false,
+        pageSize: 10,
+        loadMoreLabel: null,
+        onLoadMoreClick: null,
         completeMethod: null,
         itemTemplate: null,
         selectedItemTemplate: null,
@@ -76,6 +80,10 @@ export class AutoComplete extends Component {
         size: PropTypes.number,
         appendTo: PropTypes.any,
         tabindex: PropTypes.number,
+        enablePaging: PropTypes.bool,
+        pageSize: PropTypes.number,
+        loadMoreLabel: PropTypes.string,
+        onLoadMoreClick: PropTypes.func,
         completeMethod: PropTypes.func,
         itemTemplate: PropTypes.func,
         selectedItemTemplate: PropTypes.func,
@@ -96,7 +104,7 @@ export class AutoComplete extends Component {
 
     constructor(props) {
         super(props);
-        
+        this.state={};
         this.onInputChange = this.onInputChange.bind(this);
         this.onInputFocus = this.onInputFocus.bind(this);
         this.onInputBlur = this.onInputBlur.bind(this);
@@ -110,6 +118,15 @@ export class AutoComplete extends Component {
     }
     
     shouldComponentUpdate(nextProps, nextState) {        
+        if (nextState.extraList){
+            if(nextState.extraList.length > 0){ 
+                this.props.suggestions.pop();
+                nextState.extraList.forEach(function(item){
+                    nextProps.suggestions.push(item);
+                });
+                nextState.extraList = []; 
+            }
+        }   
         if(this.manualModelChange) {
             this.manualModelChange = false;
             return false;
@@ -182,6 +199,20 @@ export class AutoComplete extends Component {
 
     selectItem(event, option) {
         if(this.props.multiple) {
+            if (this.props.enablePaging && this.props.loadMoreLabel && this.props.loadMoreLabel===option.label) {
+                if (this.props.onLoadMoreClick && typeof(this.props.onLoadMoreClick)==='function' ) {
+                    this.props.onLoadMoreClick((newpage)=> { 
+                        if (newpage && newpage.length) { 
+                            this.setState({extraList: newpage}); 
+                        }
+                        else {
+                            this.props.suggestions.pop();
+                            this.setState({extraList: []});
+                        } 
+                    }); 
+                    return;                   
+                }
+            }
             this.inputEl.value = '';
             if(!this.isSelected(option)) {
                 let newValue = this.props.value ? [...this.props.value, option] : [option];
@@ -189,8 +220,22 @@ export class AutoComplete extends Component {
             }
         }
         else {
+            if (this.props.enablePaging && this.props.loadMoreLabel && this.props.loadMoreLabel===option) { 
+                if (this.props.onLoadMoreClick && typeof(this.props.onLoadMoreClick) === 'function' ) {
+                    this.props.onLoadMoreClick((newpage)=> {  
+                        if (newpage && newpage.length) {  
+                            this.setState({extraList: newpage}); 
+                        }
+                        else {
+                            this.props.suggestions.pop();
+                        } 
+                    });                    
+                }
+            }
+            else {
             this.updateInputField(option);
             this.updateModel(event, option);
+            }
         }
 
         if(this.props.onSelect) {
@@ -351,9 +396,10 @@ export class AutoComplete extends Component {
                 case 13:
                     if(highlightItem) {
                         this.selectItem(event, this.props.suggestions[DomHandler.index(highlightItem)]);
-                        this.hidePanel();
-                    }
-                    
+                            if (highlightItem.innerText !== this.props.loadMoreLabel) {                               
+                                this.hidePanel();
+                            }
+                        }
                     event.preventDefault();
                 break;
 
@@ -572,7 +618,11 @@ export class AutoComplete extends Component {
                 if(event.which === 3) {
                     return;
                 }
-                
+                if (this.props.enablePaging && this.props.loadMoreLabel) {
+                    if (event.target && event.target.innerText && event.target.innerText === this.props.loadMoreLabel ) { 
+                        return;
+                    }
+                } 
                 if(!this.inputClick && !this.dropdownClick) {
                     this.hidePanel();
                 }
@@ -616,14 +666,33 @@ export class AutoComplete extends Component {
         if(this.props.dropdown) {
             dropdown = this.renderDropdown();
         }
-
+        if (this.props.enablePaging && this.props.loadMoreLabel 
+            && this.props.suggestions && this.props.suggestions.length) {
+            if (this.props.field) {
+                let loadMoreItem = {};
+                loadMoreItem[this.props.field] = this.props.loadMoreLabel;
+                this.lastItem=this.props.suggestions[this.props.suggestions.length-1];
+                if (this.formatValue(this.lastItem) !== this.props.loadMoreLabel && this.props.suggestions.length >= this.props.pageSize) {
+                    this.props.suggestions.push({...loadMoreItem});                                               
+                    this.lastItem = {...loadMoreItem};
+                }
+            }
+            else {
+                this.lastItem=this.props.suggestions[this.props.suggestions.length-1];
+                if (this.lastItem !== this.props.loadMoreLabel && this.props.suggestions.length >= this.props.pageSize) {
+                    this.props.suggestions.push(this.props.loadMoreLabel);                                               
+                    this.lastItem = this.props.loadMoreLabel;
+                }
+            }                    
+        }
         return (
             <span ref={(el) => this.container = el} id={this.props.id} style={this.props.style} className={className} >
                 {input}
                 {loader}
                 {dropdown}
                 <AutoCompletePanel ref={(el) => this.panel = el} suggestions={this.props.suggestions} field={this.props.field} 
-                            appendTo={this.props.appendTo} itemTemplate={this.props.itemTemplate} onItemClick={this.selectItem}/>
+                    scrollHeight={this.props.scrollHeight}
+                    appendTo={this.props.appendTo} itemTemplate={this.props.itemTemplate} onItemClick={this.selectItem}/>
             </span>
         );
     }
