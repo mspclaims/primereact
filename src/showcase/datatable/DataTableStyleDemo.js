@@ -5,6 +5,7 @@ import {CarService} from '../service/CarService';
 import {DataTableSubmenu} from '../../showcase/datatable/DataTableSubmenu';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 
 export class DataTableStyleDemo extends Component {
 
@@ -19,17 +20,17 @@ export class DataTableStyleDemo extends Component {
     componentDidMount() {
         this.carservice.getCarsSmall().then(data => this.setState({cars: data}));
     }
-    
-    yearTemplate(rowData, column) {
+
+    yearTemplate(rowData) {
         let year = rowData.year;
-        let bgColor = year > 2010 ? '#5cb85c' : '#ffffff';
-        
-        return <div style={{backgroundColor: bgColor, padding: '.25em .5em'}}>{year}</div>;
+        let fontWeight = year > 2010 ? 'bold' : 'normal';
+
+        return <span style={{fontWeight: fontWeight}}>{rowData.year}</span>;
     }
-    
+
     rowClassName(rowData) {
         let brand = rowData.brand;
-        
+
         return {'p-highlight' : (brand === 'Jaguar')};
     }
 
@@ -42,14 +43,18 @@ export class DataTableStyleDemo extends Component {
                     <div className="feature-intro">
                         <h1>DataTable - Styling</h1>
                         <p>Particular rows and cells can be styled based on data.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("dataTable")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
                 <div className="content-section implementation">
-                    <p>This datatable highlights cell whose year value is greater than 2010 and highlights rows whose brand is a Jaguar.</p>
+                    <p>This datatable highlights cell with a bolder font weight whose year value is greater than 2010 and highlights rows whose brand is a Jaguar.</p>
                     <DataTable value={this.state.cars} rowClassName={this.rowClassName}>
                         <Column field="vin" header="Vin" />
-                        <Column field="year" header="Year" body={this.yearTemplate} style={{padding: 0}}/>
+                        <Column field="year" header="Year" body={this.yearTemplate} />
                         <Column field="brand" header="Brand" />
                         <Column field="color" header="Color" />
                     </DataTable>
@@ -66,7 +71,7 @@ export class DataTableStyleDemoDoc extends Component {
     shouldComponentUpdate(){
         return false;
     }
-    
+
     render() {
         return (
             <div className="content-section documentation">
@@ -92,17 +97,17 @@ export class DataTableStyleDemo extends Component {
     componentDidMount() {
         this.carservice.getCarsSmall().then(data => this.setState({cars: data}));
     }
-    
+
     yearTemplate(rowData, column) {
         let year = rowData.year;
-        let bgColor = year > 2010 ? '#5cb85c' : '#ffffff';
-        
-        return <div style={{backgroundColor: bgColor, padding: '.25em .5em'}}>{year}</div>;
+        let fontWeight = year > 2010 ? 'bold' : 'normal';
+
+        return <span style={{fontWeight: fontWeight}}>{rowData.year}</span>;
     }
-    
+
     rowClassName(rowData) {
         let brand = rowData.brand;
-        
+
         return {'p-highlight' : (brand === 'Jaguar')};
     }
 
@@ -119,10 +124,10 @@ export class DataTableStyleDemo extends Component {
                 </div>
 
                 <div className="content-section implementation">
-                    <p>This datatable highlights cell whose year value is greater than 2010 and highlights rows whose brand is a Jaguar.</p>
+                    <p>This datatable highlights cells with a bolder font weight whose year value is greater than 2010 and highlights rows whose brand is a Jaguar.</p>
                     <DataTable value={this.state.cars} rowClassName={this.rowClassName}>
                         <Column field="vin" header="Vin" />
-                        <Column field="year" header="Year" body={this.yearTemplate} style={{padding: 0}}/>
+                        <Column field="year" header="Year" body={this.yearTemplate} />
                         <Column field="brand" header="Brand" />
                         <Column field="color" header="Color" />
                     </DataTable>

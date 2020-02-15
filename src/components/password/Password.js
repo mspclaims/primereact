@@ -4,6 +4,7 @@ import {InputText} from '../inputtext/InputText';
 import PropTypes from 'prop-types';
 import DomHandler from '../utils/DomHandler';
 import Tooltip from "../tooltip/Tooltip";
+import ObjectUtils from '../utils/ObjectUtils';
  
 export class Password extends Component {
  
@@ -154,11 +155,16 @@ export class Password extends Component {
 
     componentDidMount() {
         if (this.props.tooltip) {
-            this.tooltip = new Tooltip({
-                target: this.inputEl,
-                content: this.props.tooltip,
-                options: this.props.tooltipOptions
-            });
+            this.renderTooltip();
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.tooltip !== this.props.tooltip) {
+            if (this.tooltip)
+                this.tooltip.updateContent(this.props.tooltip);
+            else
+                this.renderTooltip();
         }
     }
 
@@ -178,16 +184,16 @@ export class Password extends Component {
         }
     }
 
+    renderTooltip() {
+        this.tooltip = new Tooltip({
+            target: this.inputEl,
+            content: this.props.tooltip,
+            options: this.props.tooltipOptions
+        });
+    }
+
     render() {
-        let inputProps = Object.assign({}, this.props);
-        delete inputProps.onFocus;
-        delete inputProps.onBlur;
-        delete inputProps.onKeyUp;
-        delete inputProps.promptLabel;
-        delete inputProps.weakLabel;
-        delete inputProps.mediumLabel;
-        delete inputProps.strongLabel;
-        delete inputProps.feedback;
+        let inputProps = ObjectUtils.findDiffKeys(this.props, Password.defaultProps);
 
         return (
             <InputText ref={(el) => this.inputEl = ReactDOM.findDOMNode(el)} {...inputProps} type="password" onFocus={this.onFocus} onBlur={this.onBlur} onKeyUp={this.onKeyup} />

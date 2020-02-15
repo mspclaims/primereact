@@ -2,9 +2,10 @@ import React, {Component} from 'react';
 import {OrganizationChart} from '../../components/organizationchart/OrganizationChart';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 
 export class OrganizationChartDemo extends Component {
-        
+
     constructor() {
         super();
         this.state = {
@@ -107,7 +108,7 @@ export class OrganizationChartDemo extends Component {
             }],
             selection: []
         };
-        
+
         this.nodeTemplate = this.nodeTemplate.bind(this);
     }
 
@@ -124,7 +125,7 @@ export class OrganizationChartDemo extends Component {
             );
         }
 
-        if (node.type === "department") {    
+        if (node.type === "department") {
             return node.label;
         }
     }
@@ -135,13 +136,17 @@ export class OrganizationChartDemo extends Component {
                 <div className="content-section introduction">
                     <div className="feature-intro">
                         <h1>OrganizationChart</h1>
-                        <p>OrganizationChart visualized hierarchical organization data.</p>
+                        <p>OrganizationChart visualizes hierarchical organization data.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("organizationChart")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
                 <div className="content-section implementation organizationchart-demo">
                     <h3>Advanced</h3>
-                    <OrganizationChart value={this.state.data1} nodeTemplate={this.nodeTemplate} selection={this.state.selection} selectionMode="multiple" 
+                    <OrganizationChart value={this.state.data1} nodeTemplate={this.nodeTemplate} selection={this.state.selection} selectionMode="multiple"
                         onSelectionChange={event => this.setState({selection: event.data})} className="company"></OrganizationChart>
 
                     <h3>Basic</h3>
@@ -179,7 +184,7 @@ import {OrganizationChart} from 'primereact/organizationchart';
             <CodeHighlight className="language-javascript">
 {`
 export class OrganizationChartDemo extends Component {
-        
+
     constructor() {
         super();
         this.state = {
@@ -228,7 +233,7 @@ export class OrganizationChartDemo extends Component {
 
             <h3>Templating</h3>
             <p>Label of the treenode is displayed inside the node content by default and templating enables further customization.</p>
-               
+
 <CodeHighlight className="language-jsx">
 {`
 <OrganizationChart value={this.state.data} nodeTemplate={this.nodeTemplate}></OrganizationChart>
@@ -252,7 +257,7 @@ nodeTemplate(node) {
         );
     }
 
-    if (node.type === "department") {    
+    if (node.type === "department") {
         return node.label;
     }
 }
@@ -407,7 +412,7 @@ nodeTemplate(node) {
 
                 <h3>Dependencies</h3>
                 <p>None.</p>
-            
+
             </TabPanel>
 
             <TabPanel header="Source">
@@ -421,7 +426,7 @@ import {OrganizationChart} from 'primereact/organizationchart';
 import './OrganizationChartCustomStyle.css';
 
 export class OrganizationChartDemo extends Component {
-        
+
     constructor() {
         super();
         this.state = {
@@ -524,7 +529,7 @@ export class OrganizationChartDemo extends Component {
             }],
             selection: []
         };
-        
+
         this.nodeTemplate = this.nodeTemplate.bind(this);
     }
 
@@ -541,7 +546,7 @@ export class OrganizationChartDemo extends Component {
             );
         }
 
-        if (node.type === "department") {    
+        if (node.type === "department") {
             return node.label;
         }
     }
@@ -558,7 +563,7 @@ export class OrganizationChartDemo extends Component {
 
                 <div className="content-section implementation organizationchart-demo">
                     <h3>Advanced</h3>
-                    <OrganizationChart value={this.state.data1} nodeTemplate={this.nodeTemplate} selection={this.state.selection} selectionMode="multiple" 
+                    <OrganizationChart value={this.state.data1} nodeTemplate={this.nodeTemplate} selection={this.state.selection} selectionMode="multiple"
                         onSelectionChange={event => this.setState({selection: event.data})} className="company"></OrganizationChart>
 
                     <h3>Basic</h3>

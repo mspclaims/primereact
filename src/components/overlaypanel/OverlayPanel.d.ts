@@ -8,8 +8,12 @@ interface OverlayPanelProps {
     style?: object;
     className?: string;
     appendTo?: any;
+    ariaCloseLabel?: string;
+    onHide?(): void;
 }
 
 export class OverlayPanel extends React.Component<OverlayPanelProps,any> {
     public toggle(event:SyntheticEvent):void;
+    public show(event:SyntheticEvent,target:EventTarget):void;
+    public hide():void;
 }

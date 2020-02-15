@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import KeyFilter from "../keyfilter/KeyFilter";
 import Tooltip from "../tooltip/Tooltip";
+import DomHandler from '../utils/DomHandler';
+import ObjectUtils from '../utils/ObjectUtils';
 
 export class InputText extends Component {
 
@@ -49,15 +51,27 @@ export class InputText extends Component {
         if (this.props.onInput) {
             this.props.onInput(event, validatePattern);
         }
+
+        if (!this.props.onChange) {
+            if (event.target.value.length > 0)
+                DomHandler.addClass(event.target, 'p-filled');
+            else
+                DomHandler.removeClass(event.target, 'p-filled');
+        }
     }
 
     componentDidMount() {
         if (this.props.tooltip) {
-            this.tooltip = new Tooltip({
-                target: this.inputEl,
-                content: this.props.tooltip,
-                options: this.props.tooltipOptions
-            });
+            this.renderTooltip();
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.tooltip !== this.props.tooltip) {
+            if (this.tooltip)
+                this.tooltip.updateContent(this.props.tooltip);
+            else
+                this.renderTooltip();
         }
     }
 
@@ -68,20 +82,22 @@ export class InputText extends Component {
         }
     }
 
+    renderTooltip() {
+        this.tooltip = new Tooltip({
+            target: this.element,
+            content: this.props.tooltip,
+            options: this.props.tooltipOptions
+        });
+    }
+
     render() {
         const className = classNames('p-inputtext p-component', this.props.className, {
             'p-disabled': this.props.disabled,
-            'p-filled': (this.props.value && this.props.value.length > 0) || (this.props.defaultValue && this.props.defaultValue.length > 0)
+            'p-filled': (this.props.value != null && this.props.value.toString().length > 0) || (this.props.defaultValue != null && this.props.defaultValue.toString().length > 0)
         });
 
-        let inputProps = Object.assign({}, this.props);
-        delete inputProps.onInput;
-        delete inputProps.onKeyPress;
-        delete inputProps.keyfilter;
-        delete inputProps.validateOnly;
-        delete inputProps.tooltip;
-        delete inputProps.tooltipOptions;
+        let inputProps = ObjectUtils.findDiffKeys(this.props, InputText.defaultProps);
 
-        return <input ref={(el) => this.inputEl = el} {...inputProps} className={className} onInput={this.onInput} onKeyPress={this.onKeyPress}/>;
+        return <input ref={(el) => this.element = el} {...inputProps} className={className} onInput={this.onInput} onKeyPress={this.onKeyPress}/>;
     }
 }

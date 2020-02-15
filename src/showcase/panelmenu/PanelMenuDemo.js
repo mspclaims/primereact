@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import {PanelMenu} from '../../components/panelmenu/PanelMenu';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 
 export class PanelMenuDemo extends Component {
 
@@ -25,8 +26,7 @@ export class PanelMenuDemo extends Component {
                             {
                                label:'Video',
                                icon:'pi pi-fw pi-video'
-                            },
-             
+                            }
                          ]
                       },
                       {
@@ -58,8 +58,7 @@ export class PanelMenuDemo extends Component {
                       {
                          label:'Justify',
                          icon:'pi pi-fw pi-align-justify'
-                      },
-             
+                      }
                    ]
                 },
                 {
@@ -68,13 +67,11 @@ export class PanelMenuDemo extends Component {
                    items:[
                       {
                          label:'New',
-                         icon:'pi pi-fw pi-user-plus',
-             
+                         icon:'pi pi-fw pi-user-plus'
                       },
                       {
                          label:'Delete',
-                         icon:'pi pi-fw pi-user-minus',
-             
+                         icon:'pi pi-fw pi-user-minus'
                       },
                       {
                          label:'Search',
@@ -139,6 +136,10 @@ export class PanelMenuDemo extends Component {
                     <div className="feature-intro">
                         <h1>PanelMenu</h1>
                         <p>PanelMenu is a hybrid of accordion-tree components.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("panelMenu")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
@@ -199,8 +200,7 @@ const items:[
                 {
                    label:'Video',
                    icon:'pi pi-fw pi-video'
-                },
- 
+                }
              ]
           },
           {
@@ -233,7 +233,7 @@ const items:[
              label:'Justify',
              icon:'pi pi-fw pi-align-justify'
           },
- 
+
        ]
     },
     {
@@ -242,13 +242,11 @@ const items:[
        items:[
           {
              label:'New',
-             icon:'pi pi-fw pi-user-plus',
- 
+             icon:'pi pi-fw pi-user-plus'
           },
           {
              label:'Delete',
-             icon:'pi pi-fw pi-user-minus',
- 
+             icon:'pi pi-fw pi-user-minus'
           },
           {
              label:'Search',
@@ -429,7 +427,7 @@ export class PanelMenuDemo extends Component {
                                label:'Video',
                                icon:'pi pi-fw pi-video'
                             },
-             
+
                          ]
                       },
                       {
@@ -462,7 +460,7 @@ export class PanelMenuDemo extends Component {
                          label:'Justify',
                          icon:'pi pi-fw pi-align-justify'
                       },
-             
+
                    ]
                 },
                 {
@@ -472,12 +470,12 @@ export class PanelMenuDemo extends Component {
                       {
                          label:'New',
                          icon:'pi pi-fw pi-user-plus',
-             
+
                       },
                       {
                          label:'Delete',
                          icon:'pi pi-fw pi-user-minus',
-             
+
                       },
                       {
                          label:'Search',

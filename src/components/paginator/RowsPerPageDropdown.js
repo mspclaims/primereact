@@ -10,7 +10,7 @@ export class RowsPerPageDropdown extends Component {
         onChange: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         options: PropTypes.array,
         value: PropTypes.number,
         onChange: PropTypes.func
@@ -19,7 +19,7 @@ export class RowsPerPageDropdown extends Component {
     render() {
         if(this.props.options) {
             let options = this.props.options.map((opt, i) => {
-                return {label: opt, value: opt};
+                return {label: String(opt), value: opt};
             });
             
             return (

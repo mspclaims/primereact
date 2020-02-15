@@ -4,15 +4,27 @@ import {ProgressBar} from '../../components/progressbar/ProgressBar';
 import {Growl} from '../../components/growl/Growl';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 
 export class ProgressBarDemo extends Component {
 
     constructor() {
         super();
         this.state = {
-            value1: 0, 
-            value2: 50
+            value1: 0,
+            value2: 50,
+            value3: 40
         };
+
+        this.displayValueTemplate = this.displayValueTemplate.bind(this);
+    }
+
+    displayValueTemplate(value) {
+        return (
+            <React.Fragment>
+                {value}/<b>100</b>
+            </React.Fragment>
+        );
     }
 
     componentDidMount() {
@@ -46,6 +58,10 @@ export class ProgressBarDemo extends Component {
                     <div className="feature-intro">
                         <h1>ProgressBar</h1>
                         <p>ProgressBar is a process status indicator</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("progressBar")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
@@ -57,6 +73,9 @@ export class ProgressBarDemo extends Component {
 
                     <h3>Static</h3>
                     <ProgressBar value={this.state.value2}></ProgressBar>
+
+                    <h3>Custom display value</h3>
+                    <ProgressBar value={this.state.value3} displayValueTemplate={this.displayValueTemplate}></ProgressBar>
 
                     <h3>Indeterminate</h3>
                     <ProgressBar mode="indeterminate" style={{height: '6px'}}></ProgressBar>
@@ -72,7 +91,7 @@ export class ProgressBarDoc extends Component {
     shouldComponentUpdate(){
         return false;
     }
-    
+
     render() {
         return (
             <div className="content-section documentation">
@@ -156,6 +175,12 @@ import {ProgressBar} from 'primereact/progressbar';
                                         <td>determinate</td>
                                         <td>Defines the mode of the progress, valid values are "determinate" and "indeterminate".</td>
                                     </tr>
+                                    <tr>
+                                        <td>displayValueTemplate</td>
+                                        <td>Element</td>
+                                        <td>null</td>
+                                        <td>Custom display value template</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -214,9 +239,20 @@ export class ProgressBarDemo extends Component {
     constructor() {
         super();
         this.state = {
-            value1: 0, 
-            value2: 50
+            value1: 0,
+            value2: 50,
+            value3: 40
         };
+
+        this.displayValueTemplate = this.displayValueTemplate.bind(this);
+    }
+
+    displayValueTemplate(value) {
+        return (
+            <React.Fragment>
+                {value}/<b>100</b>
+            </React.Fragment>
+        );
     }
 
     componentDidMount() {
@@ -261,6 +297,9 @@ export class ProgressBarDemo extends Component {
 
                     <h3>Static</h3>
                     <ProgressBar value={this.state.value2}></ProgressBar>
+
+                    <h3>Custom display value</h3>
+                    <ProgressBar value={this.state.value3} displayValueTemplate={this.props.displayValueTemplate}></ProgressBar>
 
                     <h3>Indeterminate</h3>
                     <ProgressBar mode="indeterminate" style={{height: '6px'}}></ProgressBar>

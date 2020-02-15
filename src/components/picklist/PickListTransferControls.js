@@ -14,12 +14,12 @@ export class PickListTransferControls extends Component {
         onTransfer: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         source: PropTypes.array,
         target: PropTypes.array,
         sourceSelection: PropTypes.array,
         targetSelection: PropTypes.array,
-        onTransfer: PropTypes.array
+        onTransfer: PropTypes.func
     }
         
     constructor() {

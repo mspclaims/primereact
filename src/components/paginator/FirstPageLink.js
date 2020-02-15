@@ -9,18 +9,18 @@ export class FirstPageLink extends Component {
         onClick: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         disabled: PropTypes.bool,
         onClick: PropTypes.func
     }
-    
+
     render() {
-        let className = classNames('p-paginator-first p-paginator-element', {'p-disabled': this.props.disabled});
-        
+        let className = classNames('p-paginator-first p-paginator-element p-link', {'p-disabled': this.props.disabled});
+
         return (
-            <a className={className} onClick={this.props.onClick} tabIndex={this.props.disabled ? -1 : null}>
+            <button type="button" className={className} onClick={this.props.onClick} disabled={this.props.disabled}>
                 <span className="p-paginator-icon pi pi-step-backward"></span>
-            </a>
+            </button>
         );
     }
 }

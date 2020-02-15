@@ -16,6 +16,10 @@ export class Sidebar extends Component {
         baseZIndex: 0,
         dismissable: true,
         showCloseIcon: true,
+        ariaCloseLabel: 'close',
+        closeOnEscape: true,
+        iconsTemplate: null,
+        modal: true,
         onShow: null,
         onHide: null
     };
@@ -31,6 +35,10 @@ export class Sidebar extends Component {
         baseZIndex: PropTypes.number,
         dismissable: PropTypes.bool,
         showCloseIcon: PropTypes.bool,
+        ariaCloseLabel: PropTypes.string,
+        closeOnEscape: PropTypes.bool,
+        iconsTemplate: PropTypes.func,
+        modal: PropTypes.bool,
         onShow: PropTypes.func,
         onHide: PropTypes.func.isRequired
     };
@@ -42,7 +50,7 @@ export class Sidebar extends Component {
 
     componentDidMount() {
         if (this.props.visible) {
-            this.show();
+            this.onShow();
         }
     }
 
@@ -58,11 +66,31 @@ export class Sidebar extends Component {
             else
                 this.onHide();
         }
+
+        if (this.mask && prevProps.dismissable !== this.props.dismissable) {
+            if (this.props.dismissable) {
+                this.bindMaskClickListener();
+            }
+            else {
+                this.unbindMaskClickListener();
+            }
+        }
     }
 
     onShow() {
         this.container.style.zIndex = String(this.props.baseZIndex + DomHandler.generateZIndex());
-        this.enableModality();
+
+        if (this.props.modal) {
+            this.enableModality();
+        }
+
+        if (this.props.closeOnEscape) {
+            this.bindDocumentEscapeListener();
+        }
+
+        if (this.closeIcon) {
+            this.closeIcon.focus();
+        }
 
         if (this.props.onShow) {
             this.props.onShow();
@@ -73,13 +101,18 @@ export class Sidebar extends Component {
         if (!this.mask) {
             this.mask = document.createElement('div');
             this.mask.style.zIndex = String(parseInt(this.container.style.zIndex, 10) - 1);
-            DomHandler.addMultipleClasses(this.mask, 'p-component-overlay p-sidebar-mask');
+            let maskStyleClass = 'p-component-overlay p-sidebar-mask';
+            if(this.props.blockScroll) {
+                maskStyleClass += ' p-sidebar-mask-scrollblocker';
+            }
+            DomHandler.addMultipleClasses(this.mask, maskStyleClass);
+
             if (this.props.dismissable) {
                 this.bindMaskClickListener();
             }
 
             document.body.appendChild(this.mask);
-            
+
             if (this.props.blockScroll) {
                 DomHandler.addClass(document.body, 'p-overflow-hidden');
             }
@@ -90,8 +123,21 @@ export class Sidebar extends Component {
         if (this.mask) {
             this.unbindMaskClickListener();
             document.body.removeChild(this.mask);
+
             if (this.props.blockScroll) {
-                DomHandler.removeClass(document.body, 'p-overflow-hidden');
+                let bodyChildren = document.body.children;
+                let hasBlockerMasks;
+                for (let i = 0; i < bodyChildren.length; i++) {
+                    let bodyChild = bodyChildren[i];
+                    if (DomHandler.hasClass(bodyChild, 'p-sidebar-mask-scrollblocker')) {
+                        hasBlockerMasks = true;
+                        break;
+                    }
+                }
+
+                if (!hasBlockerMasks) {
+                    DomHandler.removeClass(document.body, 'p-overflow-hidden');
+                }
             }
             this.mask = null;
         }
@@ -104,7 +150,29 @@ export class Sidebar extends Component {
 
     onHide() {
         this.unbindMaskClickListener();
-        this.disableModality();
+        this.unbindDocumentEscapeListener();
+
+        if (this.props.modal) {
+            this.disableModality();
+        }
+    }
+
+    bindDocumentEscapeListener() {
+        this.documentEscapeListener = (event) => {
+            if (event.which === 27) {
+                if (parseInt(this.container.style.zIndex, 10) === (DomHandler.getCurrentZIndex() + this.props.baseZIndex)) {
+                    this.onCloseClick(event);
+                }
+            }
+        };
+        document.addEventListener('keydown', this.documentEscapeListener);
+    }
+
+    unbindDocumentEscapeListener() {
+        if (this.documentEscapeListener) {
+            document.removeEventListener('keydown', this.documentEscapeListener);
+            this.documentEscapeListener = null;
+        }
     }
 
     bindMaskClickListener() {
@@ -126,10 +194,19 @@ export class Sidebar extends Component {
     renderCloseIcon() {
         if (this.props.showCloseIcon) {
             return (
-                <a className="p-sidebar-close" role="button" onClick={this.onCloseClick}>
-                    <span className="pi pi-times"/>
-                </a>
+                <button type="button" ref={el => this.closeIcon = el} className="p-sidebar-close p-link" onClick={this.onCloseClick} aria-label={this.props.ariaCloseLabel}>
+                    <span className="p-sidebar-close-icon pi pi-times"/>
+                </button>
             );
+        }
+        else {
+            return null;
+        }
+    }
+
+    renderIconsTemplate() {
+        if (this.props.iconsTemplate) {
+            return this.props.iconsTemplate(this);
         }
         else {
             return null;
@@ -140,10 +217,12 @@ export class Sidebar extends Component {
         const className = classNames('p-sidebar p-component', this.props.className, 'p-sidebar-' + this.props.position,
                                        {'p-sidebar-active': this.props.visible, 'p-sidebar-full': this.props.fullScreen});
         const closeIcon = this.renderCloseIcon();
+        const iconsTemplate = this.renderIconsTemplate();
 
         return (
-            <div ref={(el) => this.container=el} id={this.props.id} className={className} style={this.props.style}>
+            <div ref={(el) => this.container=el} id={this.props.id} className={className} style={this.props.style} role="complementary">
                 {closeIcon}
+                {iconsTemplate}
                 {this.props.children}
             </div>
         );

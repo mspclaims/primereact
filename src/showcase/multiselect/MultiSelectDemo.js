@@ -3,14 +3,45 @@ import {Link} from 'react-router-dom';
 import {MultiSelect} from '../../components/multiselect/MultiSelect';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 
 export class MultiSelectDemo extends Component {
-        
+
     constructor() {
         super();
         this.state = {
-            cars: []
+            cars1: [],
+            cars2: []
         };
+        this.carTemplate = this.carTemplate.bind(this);
+        this.selectedCarTemplate = this.selectedCarTemplate.bind(this);
+    }
+
+    carTemplate(option) {
+        const logoPath = 'showcase/resources/demo/images/car/' + option.label + '.png';
+
+        return (
+            <div className="p-clearfix">
+                <img alt={option.label} src={logoPath} style={{width:'24px', verticalAlign:'middle'}} />
+                <span style={{fontSize:'1em',float:'right',marginTop:'4px'}}>{option.label}</span>
+            </div>
+        );
+    }
+
+    selectedCarTemplate(value) {
+        if (value) {
+            const logoPath = 'showcase/resources/demo/images/car/' + value + '.png';
+
+            return (
+                <div className="my-multiselected-item-token">
+                    <img alt={value} src={logoPath} style={{width:'20px', verticalAlign:'middle', marginRight:'.5em'}} />
+                    <span>{value}</span>
+                </div>
+            );
+        }
+        else {
+            return <span className="my-multiselected-empty-token">Choose</span>
+        }
     }
 
     render() {
@@ -32,14 +63,23 @@ export class MultiSelectDemo extends Component {
                     <div className="feature-intro">
                         <h1>MultiSelect</h1>
                         <p>MultiSelect is used to select multiple items from a collection.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("multiSelect")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
-                <div className="content-section implementation">
-                    <MultiSelect value={this.state.cars} options={cars} onChange={(e) => this.setState({cars: e.value})} 
-                            style={{width:'12em'}} filter={true} />
+                <div className="content-section implementation multiselect-demo">
+                    <h3>Basic</h3>
+                    <MultiSelect value={this.state.cars1} options={cars} onChange={(e) => this.setState({cars1: e.value})}
+                            style={{minWidth:'12em'}} filter={true} placeholder="Choose" />
+
+                    <h3>Templating</h3>
+                    <MultiSelect value={this.state.cars2} options={cars} onChange={(e) => this.setState({cars2: e.value})}
+                                 style={{minWidth:'12em'}} filter={true} itemTemplate={this.carTemplate} selectedItemTemplate={this.selectedCarTemplate} />
                 </div>
-                
+
                 <MultiSelectDoc />
             </div>
         );
@@ -51,7 +91,7 @@ export class MultiSelectDoc extends Component {
     shouldComponentUpdate(){
         return false;
     }
-    
+
     render() {
         return (
             <div className="content-section documentation">
@@ -66,11 +106,11 @@ import {MultiSelect} from 'primereact/multiselect';
 </CodeHighlight>
 
             <h3>Getting Started</h3>
-            <p>MultiSelect is used as a controlled component with <i>value</i> and <i>onChange</i> properties along with the options collection. There are two alternatives 
+            <p>MultiSelect is used as a controlled component with <i>value</i> and <i>onChange</i> properties along with the options collection. There are two alternatives
             of how to define the options property; One way is providing a collection of <i>SelectItem</i> instances having label-value pairs
-            whereas other way is providing an array of arbitrary objects along with the <i>optionLabel</i> property to specify the field name of the option. SelectItem API is designed to have more 
+            whereas other way is providing an array of arbitrary objects along with the <i>optionLabel</i> property to specify the field name of the option. SelectItem API is designed to have more
             control on how the options are displayed such as grouping and disabling however in most cases an arbitrary object collection will suffice.</p>
-        
+
             <p><b>Options as SelectItems</b></p>
             <CodeHighlight className="language-javascript">
 {`
@@ -84,7 +124,7 @@ const citySelectItems = [
 
 `}
             </CodeHighlight>
-        
+
             <CodeHighlight className="language-jsx">
 {`
 <MultiSelect value={this.state.cities} options={citySelectItems} onChange={(e) => this.setState({cities: e.value})} />
@@ -138,6 +178,36 @@ carTemplate(option) {
 
 `}
 </CodeHighlight>
+                        <p>In addition <i>selectedItemTemplate</i> can be used to customize the selected values display instead of the default comma separated list.</p>
+
+                        <CodeHighlight className="language-jsx">
+                            {`
+<MultiSelect value={this.state.cars} options={cars} onChange={(e) => this.setState({cars: e.value})} selectedItemTemplate={this.selectedCarTemplate} />
+
+`}
+                        </CodeHighlight>
+
+                        <CodeHighlight className="language-javascript">
+                            {`
+
+selectedCarTemplate(option) {
+
+    if(option) {
+        const logoPath = 'showcase/resources/demo/images/car/' + option.label + '.png';
+        return (
+            <div className="my-multiselected-item-token">
+                <img alt={option.label} src={logoPath} style={{width:'20px', verticalAlign:'middle', marginRight:'.5em'}} />
+                <span>{option.label}</span>
+            </div>
+        );
+    }
+    else {
+        return <span className="my-multiselected-empty-token">Choose</span>
+    }
+}
+
+`}
+                        </CodeHighlight>
 
             <h3>Filter</h3>
             <p>Filtering allows searching items in the list using an input field at the header. In order to use filtering, enable filter property.</p>
@@ -204,10 +274,16 @@ carTemplate(option) {
                             <td>Height of the viewport in pixels, a scrollbar is defined if height of list exceeds this value.</td>
                         </tr>
                         <tr>
-                            <td>defaultLabel</td>
+                            <td>placeholder</td>
                             <td>string</td>
-                            <td>Choose</td>
+                            <td>null</td>
                             <td>Label to display when there are no selections.</td>
+                        </tr>
+                        <tr>
+                            <td>fixedPlaceholder</td>
+                            <td>boolean</td>
+                            <td>false</td>
+                            <td>Whether to display selected items in the label section or always display the placeholder as the default label.</td>
                         </tr>
                         <tr>
                             <td>disabled</td>
@@ -220,6 +296,12 @@ carTemplate(option) {
                             <td>boolean</td>
                             <td>true</td>
                             <td>When specified, displays an input field to filter the items on keyup.</td>
+                        </tr>
+                        <tr>
+                            <td>tabIndex</td>
+                            <td>string</td>
+                            <td>null</td>
+                            <td>Index of the element in tabbing order.</td>
                         </tr>
                         <tr>
                             <td>dataKey</td>
@@ -246,10 +328,34 @@ carTemplate(option) {
                             <td>Function that gets the option and returns the content for it.</td>
                         </tr>
                         <tr>
+                            <td>selectedItemTemplate</td>
+                            <td>function</td>
+                            <td>null</td>
+                            <td>Function that gets an item in the value and returns the content for it.</td>
+                        </tr>
+                        <tr>
                             <td>appendTo</td>
                             <td>DOM element</td>
                             <td>null</td>
                             <td>DOM element instance where the dialog should be mounted.</td>
+                        </tr>
+                        <tr>
+                            <td>maxSelectedLabels</td>
+                            <td>number</td>
+                            <td>3</td>
+                            <td>Decides how many selected item labels to show at most.</td>
+                        </tr>
+                        <tr>
+                            <td>selectedItemsLabel</td>
+                            <td>string</td>
+                            <td>&#123;0&#125; items selected</td>
+                            <td>Label to display after exceeding max selected labels.</td>
+                        </tr>
+                        <tr>
+                            <td>ariaLabelledBy</td>
+                            <td>string</td>
+                            <td>null</td>
+                            <td>Establishes relationships between the component and label(s) where its value should be one or more element IDs.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -272,6 +378,16 @@ carTemplate(option) {
                                 event.value: Current selected values<br />
                             </td>
                             <td>Callback to invoke when value changes.</td>
+                        </tr>
+                        <tr>
+                            <td>onFocus</td>
+                            <td>event: Browser event.</td>
+                            <td>Callback to invoke when the element receives focus.</td>
+                        </tr>
+                        <tr>
+                            <td>onBlur</td>
+                            <td>event: Browser event.</td>
+                            <td>Callback to invoke when the element loses focus.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -326,7 +442,7 @@ carTemplate(option) {
                 <h3>Dependencies</h3>
                 <p>None.</p>
             </div>
-            
+
             </TabPanel>
 
             <TabPanel header="Source">
@@ -339,12 +455,42 @@ import React, {Component} from 'react';
 import {MultiSelect} from 'primereact/multiselect';
 
 export class MultiSelectDemo extends Component {
-        
+
     constructor() {
         super();
         this.state = {
-            cars: []
+            cars1: [],
+            cars2: []
         };
+        this.carTemplate = this.carTemplate.bind(this);
+        this.selectedCarTemplate = this.selectedCarTemplate.bind(this);
+    }
+
+    carTemplate(option) {
+        const logoPath = 'showcase/resources/demo/images/car/' + option.label + '.png';
+
+        return (
+            <div className="p-clearfix">
+                <img alt={option.label} src={logoPath} style={{width:'24px', verticalAlign:'middle'}} />
+                <span style={{fontSize:'1em',float:'right',marginTop:'4px'}}>{option.label}</span>
+            </div>
+        );
+    }
+
+    selectedCarTemplate(value) {
+        if (value) {
+            const logoPath = 'showcase/resources/demo/images/car/' + value + '.png';
+
+            return (
+                <div className="my-multiselected-item-token">
+                    <img alt={value} src={logoPath} style={{width:'20px', verticalAlign:'middle', marginRight:'.5em'}} />
+                    <span>{value}</span>
+                </div>
+            );
+        }
+        else {
+            return <span className="my-multiselected-empty-token">Choose</span>
+        }
     }
 
     render() {
@@ -369,9 +515,14 @@ export class MultiSelectDemo extends Component {
                     </div>
                 </div>
 
-                <div className="content-section implementation">
-                    <MultiSelect value={this.state.cars} options={cars} onChange={(e) => this.setState({cars: e.value})} 
-                            style={{width:'12em'}} filter={true} />
+                <div className="content-section implementation multiselect-demo">
+                    <h3>Basic</h3>
+                    <MultiSelect value={this.state.cars1} options={cars} onChange={(e) => this.setState({cars1: e.value})}
+                            style={{minWidth:'12em'}} filter={true} placeholder="Choose" />
+
+                    <h3>Templating</h3>
+                    <MultiSelect value={this.state.cars2} options={cars} onChange={(e) => this.setState({cars2: e.value})}
+                                 style={{minWidth:'12em'}} filter={true} itemTemplate={this.carTemplate} selectedItemTemplate={this.selectedCarTemplate} />
                 </div>
             </div>
         );

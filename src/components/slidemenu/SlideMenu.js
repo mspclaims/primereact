@@ -16,7 +16,7 @@ export class SlideMenuSub extends Component {
         onForward: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         model: PropTypes.any,
         level: PropTypes.number,
         easing: PropTypes.string,
@@ -176,7 +176,7 @@ export class SlideMenu extends Component {
         onHide: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         id: PropTypes.string,
         model: PropTypes.array,
         popup: PropTypes.bool,
@@ -332,6 +332,14 @@ export class SlideMenu extends Component {
         if(this.documentResizeListener) {
             window.removeEventListener('resize', this.documentResizeListener);
             this.documentResizeListener = null;
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (this.props.model !== prevProps.model) {
+            this.setState({ 
+                level: 0
+            });
         }
     }
 

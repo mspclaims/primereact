@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {InputText} from '../../components/inputtext/InputText';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 
 export class KeyFilterDemo extends Component {
 
@@ -12,6 +13,10 @@ export class KeyFilterDemo extends Component {
                     <div className="feature-intro">
                         <h1>KeyFilter</h1>
                         <p>KeyFilter feature restricts user input based on a regular expression.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("keyFilter")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
@@ -37,7 +42,7 @@ export class KeyFilterDemo extends Component {
                             <InputText keyfilter="alphanum" placeholder="Alphanumberic"/>
                         </div>
                         <div className="p-col-12 p-md-4">
-                            <InputText keyfilter={/^[^#<>*!]+$/} placeholder="Block # < > * !"/>
+                            <InputText keyfilter={/^[^<>*!]+$/} placeholder="Block < > * !"/>
                         </div>
                         <div className="p-col-12 p-md-4">
                             <InputText keyfilter={/[^\s]/} placeholder="Block space key"/>
@@ -150,7 +155,7 @@ export class KeyFilterDemo extends Component {
                             <InputText keyfilter="alphanum" placeholder="Alphanumberic"/>
                         </div>
                         <div className="p-col-12 p-md-4">
-                            <InputText keyfilter={/^[^#<>*!]+$/} placeholder="Block # < > * !"/>
+                            <InputText keyfilter={/^[^<>*!]+$/} placeholder="Block < > * !"/>
                         </div>
                         <div className="p-col-12 p-md-4">
                             <InputText keyfilter={/[^\\s]/} placeholder="Block space key"/>

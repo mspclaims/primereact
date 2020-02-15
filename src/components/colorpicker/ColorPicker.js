@@ -24,7 +24,7 @@ export class ColorPicker extends Component {
         onChange: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         id: PropTypes.string,
         value: PropTypes.any,
         style: PropTypes.object,
@@ -161,7 +161,14 @@ export class ColorPicker extends Component {
     onChange(value) {
         if(this.props.onChange) {
             this.props.onChange({
-                value: value
+                value: value,
+                stopPropagation : () =>{},
+                preventDefault : () =>{},
+                target: {
+                    name: this.props.name,
+                    id: this.props.id,
+                    value: value
+                }
             })
         }
     }
@@ -371,9 +378,6 @@ export class ColorPicker extends Component {
         var max = Math.max(rgb.r, rgb.g, rgb.b);
         var delta = max - min;
         hsb.b = max;
-        if (max !== 0) {
-            
-        }
         hsb.s = max !== 0 ? 255 * delta / max : 0;
         if (hsb.s !== 0) {
             if (rgb.r === max) {
@@ -450,16 +454,18 @@ export class ColorPicker extends Component {
         this.updateUI();
 
         if (this.props.tooltip) {
-            this.tooltip = new Tooltip({
-                target: this.container,
-                content: this.props.tooltip,
-                options: this.props.tooltipOptions
-            });
+            this.renderTooltip();
         }
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
         this.updateUI();
+        if (prevProps.tooltip !== this.props.tooltip) {
+            if (this.tooltip)
+                this.tooltip.updateContent(this.props.tooltip);
+            else
+                this.renderTooltip();
+        }
     }
     
     componentWillUnmount() {
@@ -496,12 +502,20 @@ export class ColorPicker extends Component {
 
     alignPanel() {
         if (this.props.appendTo) {
-            DomHandler.absolutePosition(this.panel.element, this.container);
             this.panel.element.style.minWidth = DomHandler.getWidth(this.container) + 'px';
+            DomHandler.absolutePosition(this.panel.element, this.container);
         }
         else {
             DomHandler.relativePosition(this.panel.element, this.container);
         }
+    }
+
+    renderTooltip() {
+        this.tooltip = new Tooltip({
+            target: this.container,
+            content: this.props.tooltip,
+            options: this.props.tooltipOptions
+        });
     }
 
     renderColorSelector() {

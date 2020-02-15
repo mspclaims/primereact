@@ -19,9 +19,9 @@ export class Rating extends Component {
         onChange: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         id: PropTypes.string,
-        value: PropTypes.string,
+        value: PropTypes.number,
         disabled: PropTypes.bool,
         readonly: PropTypes.bool,
         stars: PropTypes.number,
@@ -36,13 +36,22 @@ export class Rating extends Component {
     constructor(props) {
         super(props);
         this.clear = this.clear.bind(this);
+        this.onStarKeyDown = this.onStarKeyDown.bind(this);
+        this.onCancelKeyDown = this.onCancelKeyDown.bind(this);
     }
 
     rate(event, i) {
         if (!this.props.readonly && !this.props.disabled && this.props.onChange) {
             this.props.onChange({
                 originalEvent: event,
-                value: i
+                value: i,
+                stopPropagation : () =>{},
+                preventDefault : () =>{},
+                target: {
+                    name: this.props.name,
+                    id: this.props.id,
+                    value: i
+                }
             });
         }
         
@@ -53,7 +62,14 @@ export class Rating extends Component {
         if (!this.props.readonly && !this.props.disabled && this.props.onChange) {
             this.props.onChange({
                 originalEvent: event,
-                value: null
+                value: null,
+                stopPropagation : () =>{},
+                preventDefault : () =>{},
+                target: {
+                    name: this.props.name,
+                    id: this.props.id,
+                    value: null
+                }
             });
         }
         
@@ -66,6 +82,18 @@ export class Rating extends Component {
         }
 
         return true;
+    }
+
+    onStarKeyDown(event, value) {
+        if (event.key === 'Enter') {
+            this.rate(event, value);
+        }
+    }
+
+    onCancelKeyDown(event) {
+        if (event.key === 'Enter') {
+            this.clear(event);
+        }
     }
 
     renderStars() {
@@ -81,9 +109,7 @@ export class Rating extends Component {
             });
             
             return (
-                <a onClick={(e) => this.rate(e, value)} key={value}>
-                    <span className={iconClass}></span>
-                </a>
+                <span className={iconClass} onClick={(e) => this.rate(e, value)} key={value} tabIndex={this.props.disabled||this.props.readonly ? null : '0'} onKeyDown={(e) => this.onStarKeyDown(e, value)}></span>
             );
         });
 
@@ -93,9 +119,7 @@ export class Rating extends Component {
     renderCancelIcon() {
         if (this.props.cancel) {
             return (
-                <a onClick={this.clear} className="p-rating-cancel">
-                    <span className="p-rating-icon pi pi-ban"></span>
-                </a>
+                <span className="p-rating-icon p-rating-cancel pi pi-ban" onClick={this.clear} tabIndex={this.props.disabled||this.props.readonly ? null : '0'}   onKeyDown={this.onCancelKeyDown}></span>
             );
         }
         else {
@@ -105,11 +129,16 @@ export class Rating extends Component {
 
     componentDidMount() {
         if (this.props.tooltip) {
-            this.tooltip = new Tooltip({
-                target: this.element,
-                content: this.props.tooltip,
-                options: this.props.tooltipOptions
-            });
+            this.renderTooltip();
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.tooltip !== this.props.tooltip) {
+            if (this.tooltip)
+                this.tooltip.updateContent(this.props.tooltip);
+            else
+                this.renderTooltip();
         }
     }
 
@@ -118,6 +147,14 @@ export class Rating extends Component {
             this.tooltip.destroy();
             this.tooltip = null;
         }
+    }
+
+    renderTooltip() {
+        this.tooltip = new Tooltip({
+            target: this.element,
+            content: this.props.tooltip,
+            options: this.props.tooltipOptions
+        });
     }
 
     render() {

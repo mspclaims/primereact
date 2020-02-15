@@ -22,7 +22,7 @@ export class DataScroller extends Component {
         lazy: false
     }
 
-    static propsTypes = {
+    static propTypes = {
         id: PropTypes.string,
         value: PropTypes.array,
         rows: PropTypes.number,
@@ -34,8 +34,8 @@ export class DataScroller extends Component {
         className: PropTypes.string,
         onLazyLoad: PropTypes.func,
         itemTemplate: PropTypes.func,
-        header: PropTypes.string,
-        footer: PropTypes.string,
+        header: PropTypes.any,
+        footer: PropTypes.any,
         lazy: PropTypes.bool
     }
 
@@ -146,9 +146,7 @@ export class DataScroller extends Component {
     }
 
     componentDidMount() {
-        if(this.props.lazy) {
-            this.load();
-        }
+        this.load();
 
         if(this.props.loader) {
             this.scrollFunction = () => {

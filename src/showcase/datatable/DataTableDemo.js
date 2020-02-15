@@ -2,62 +2,150 @@ import React, { Component } from 'react';
 import {Link} from 'react-router-dom';
 import {DataTable} from '../../components/datatable/DataTable';
 import {Column} from '../../components/column/Column';
+import {InputText} from '../../components/inputtext/InputText';
+import {Button} from '../../components/button/Button';
 import {CarService} from '../service/CarService';
+import {Dropdown} from '../../components/dropdown/Dropdown';
+import {MultiSelect} from '../../components/multiselect/MultiSelect';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 import {DataTableSubmenu} from '../../showcase/datatable/DataTableSubmenu';
+import "./DataTableDemo.css"
 
 export class DataTableDemo extends Component {
 
     constructor() {
         super();
         this.state = {
-            cars: []
+            cars: [],
+            brand: null,
+            colors: null,
+            selectedCar: null
         };
         this.carservice = new CarService();
+        this.onBrandChange = this.onBrandChange.bind(this);
+        this.onColorChange = this.onColorChange.bind(this);
+        this.brandTemplate = this.brandTemplate.bind(this);
+        this.actionTemplate = this.actionTemplate.bind(this);
+        this.filterBrandTemplate = this.filterBrandTemplate.bind(this);
     }
 
     componentDidMount() {
-        this.carservice.getCarsSmall().then(data => this.setState({cars: data}));
+        this.carservice.getCarsLarge().then(data => this.setState({cars: data}));
+    }
+
+    brandTemplate(rowData, column) {
+        var src = 'showcase/resources/demo/images/car/' + rowData.brand + '.png';
+        return (
+            <React.Fragment>
+                <img src={src} alt={rowData.brand} width="50px" style={{'verticalAlign': 'middle', 'marginRight': '1em'}} />
+                <span style={{'verticalAlign': 'middle'}}>{rowData.brand}</span>
+            </React.Fragment>
+        );
+    }
+
+    actionTemplate(rowData, column) {
+        return <React.Fragment>
+            <Button type="button" icon="pi pi-search" className="p-button-success" style={{marginRight: '.5em'}}></Button>
+            <Button type="button" icon="pi pi-pencil" className="p-button-warning"></Button>
+        </React.Fragment>;
+    }
+
+    filterBrandTemplate(option) {
+        if(!option.value) {
+            return option.label;
+        }
+        else {
+            var logoPath = 'showcase/resources/demo/images/car/' + option.label + '.png';
+
+            return (
+                <div className="p-clearfix p-dropdown-car-option">
+                    <img alt={option.label} src={logoPath} width="24"/>
+                    <span>{option.label}</span>
+                </div>
+            );
+        }
+    }
+
+    onBrandChange(event) {
+        this.dt.filter(event.value, 'brand', 'equals');
+        this.setState({brand: event.value});
+    }
+
+    onColorChange(event) {
+        this.dt.filter(event.value, 'color', 'in');
+        this.setState({colors: event.value});
     }
 
     render() {
-        const columns = [
-            {field: 'vin', header: 'Vin'},
-            {field: 'year', header: 'Year'},
-            {field: 'brand', header: 'Brand'},
-            {field: 'color', header: 'Color'}
+        var header = (
+            <div style={{'textAlign': 'left'}}>
+                List of Cars
+                <div  className="p-datatable-globalfilter-container">
+                    <InputText type="search" onInput={(e) => this.setState({globalFilter: e.target.value})} placeholder="Global Search" size="50"/>
+                </div>
+            </div>
+        );
+
+        let brands = [
+                {label: 'All Brands', value: null},
+                {label: 'Audi', value: 'Audi'},
+                {label: 'BMW', value: 'BMW'},
+                {label: 'Fiat', value: 'Fiat'},
+                {label: 'Honda', value: 'Honda'},
+                {label: 'Jaguar', value: 'Jaguar'},
+                {label: 'Mercedes', value: 'Mercedes'},
+                {label: 'Renault', value: 'Renault'},
+                {label: 'VW', value: 'VW'},
+                {label: 'Volvo', value: 'Volvo'}
+            ];
+
+        let brandFilter = <Dropdown style={{width: '100%'}} className="p-column-filter"
+                value={this.state.brand} options={brands} onChange={this.onBrandChange} itemTemplate={this.filterBrandTemplate}/>
+
+        let colors = [
+            {label: 'White', value: 'White'},
+            {label: 'Green', value: 'Green'},
+            {label: 'Silver', value: 'Silver'},
+            {label: 'Black', value: 'Black'},
+            {label: 'Red', value: 'Red'},
+            {label: 'Maroon', value: 'Maroon'},
+            {label: 'Brown', value: 'Brown'},
+            {label: 'Orange', value: 'Orange'},
+            {label: 'Blue', value: 'Blue'}
         ];
 
-        const dynamicColumns = columns.map((col,i) => {
-            return <Column key={col.field} field={col.field} header={col.header} />;
-        });
+        let colorFilter = <MultiSelect style={{width:'100%'}} className="p-column-filter"
+            value={this.state.colors} options={colors} onChange={this.onColorChange}/>
+
+        let actionHeader = <Button type="button" icon="pi pi-cog"></Button>
 
         return (
-            <div>
+            <div className="datatable-doc-demo">
                 <DataTableSubmenu />
 
                 <div className="content-section introduction">
                     <div className="feature-intro">
                         <h1>DataTable</h1>
                         <p>DataTable displays data in tabular format.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("dataTable")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
                 <div className="content-section implementation">
-                    <h3>Basic</h3>
-                    <DataTable value={this.state.cars}>
-                        <Column field="vin" header="Vin" />
-                        <Column field="year" header="Year" />
-                        <Column field="brand" header="Brand" />
-                        <Column field="color" header="Color" />
+                    <DataTable ref={(el) => this.dt = el} value={this.state.cars} paginator={true} rows={10} header={header}
+                            globalFilter={this.state.globalFilter} emptyMessage="No records found" className="p-datatable-cars"
+                            selectionMode="single" selection={this.state.selectedCar} onSelectionChange={e => this.setState({selectedCar: e.value})}>
+                        <Column field="vin" header="Vin" filter sortable />
+                        <Column field="year" header="Year" filter sortable />
+                        <Column field="brand" header="Brand" filter filterElement={brandFilter} sortable body={this.brandTemplate}/>
+                        <Column field="color" header="Color" filter filterElement={colorFilter} sortable />
+                        <Column header={actionHeader} body={this.actionTemplate} style={{textAlign:'center', width: '8em'}}/>
                     </DataTable>
-
-                    <h3>Dynamic Columns</h3>
-                    <DataTable value={this.state.cars}>
-                        {dynamicColumns}
-                    </DataTable>
-
                 </div>
 
                 <DataTableDoc></DataTableDoc>
@@ -71,7 +159,7 @@ export class DataTableDoc extends Component {
     shouldComponentUpdate(){
         return false;
     }
-    
+
     render() {
         return (
             <div className="content-section documentation">
@@ -95,7 +183,7 @@ import {DataTable} from 'primereact/datatable';
 import axios from 'axios';
 
 export class CarService {
-    
+
     getCarsSmall() {
         return axios.get('showcase/resources/demo/data/cars-small.json')
                 .then(res => res.data.data);
@@ -166,7 +254,7 @@ export class DataTableDemo extends Component {
             {field: 'year', header: 'Year'},
             {field: 'brand', header: 'Brand'},
             {field: 'color', header: 'Color'}
-        ]; 
+        ];
 
         let dynamicColumns = cols.map((col,i) => {
             return <Column key={col.field} field={col.field} header={col.header} />;
@@ -185,7 +273,7 @@ export class DataTableDemo extends Component {
 
             <h3>Column Component</h3>
             <p>Column component defines various options to specify corresponding features.</p>
-            
+
             <h3>Properties</h3>
             <div className="doc-tablewrapper">
                 <table className="doc-table">
@@ -227,6 +315,12 @@ export class DataTableDemo extends Component {
                             <td>any</td>
                             <td>null</td>
                             <td>Body content of the column.</td>
+                        </tr>
+                        <tr>
+                            <td>loadingBody</td>
+                            <td>any</td>
+                            <td>null</td>
+                            <td>Body content of the column to display when virtual scroll loads the new data.</td>
                         </tr>
                         <tr>
                             <td>footer</td>
@@ -287,6 +381,12 @@ export class DataTableDemo extends Component {
                             <td>function</td>
                             <td>null</td>
                             <td>Custom filter function.</td>
+                        </tr>
+                        <tr>
+                            <td>excludeGlobalFilter</td>
+                            <td>boolean</td>
+                            <td>false</td>
+                            <td>Whether to exclude from global filtering or not.</td>
                         </tr>
                         <tr>
                             <td>style</td>
@@ -379,6 +479,24 @@ export class DataTableDemo extends Component {
                             <td>Validator function to validate the cell input value.</td>
                         </tr>
                         <tr>
+                            <td>editorValidatorEvent</td>
+                            <td>string</td>
+                            <td>click</td>
+                            <td>Event to trigger the validation, possible values are "click" and "blur".</td>
+                        </tr>
+                        <tr>
+                            <td>onEditorSubmit</td>
+                            <td>function</td>
+                            <td>null</td>
+                            <td>Callback to execute when editor is submitted.</td>
+                        </tr>
+                        <tr>
+                            <td>onEditorCancel</td>
+                            <td>function</td>
+                            <td>null</td>
+                            <td>Callback to execute when editor is cancelled.</td>
+                        </tr>
+                        <tr>
                             <td>rowReorder</td>
                             <td>boolean</td>
                             <td>false</td>
@@ -390,17 +508,29 @@ export class DataTableDemo extends Component {
                             <td>pi pi-bars</td>
                             <td>Icon of the drag handle to reorder rows.</td>
                         </tr>
+                        <tr>
+                            <td>rowEditor</td>
+                            <td>boolean</td>
+                            <td>false</td>
+                            <td>Displays icons to edit row.</td>
+                        </tr>
+                        <tr>
+                            <td>exportable</td>
+                            <td>boolean</td>
+                            <td>true</td>
+                            <td>Defines whether the column is exported or not.</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
 
             <h3>Table Layout</h3>
-            <p>For performance reasons, default table-layout is fixed meaning the cell widths do not depend on their content. If you require cells to scale based on their contents
-                set <i>autoLayout</i> property to true.
+            <p>Default table-layout is fixed meaning the cell widths do not depend on their content. If you require cells to scale based on their contents
+                set <i>autoLayout</i> property to true. Note that Scrollable and/or Resizable tables do not support auto layout due to technical limitations.
             </p>
 
             <h3>Templates</h3>
-            <p>Field data of a corresponding row is displayed as the cell content by default, this can be customized using templating where current row data and column properties are passed to the body template. 
+            <p>Field data of a corresponding row is displayed as the cell content by default, this can be customized using templating where current row data and column properties are passed to the body template.
                 On the other hand, <i>header</i> and <i>footer</i> properties of a column are used to define the content of these sections by accepting either simple string values or JSX for advanced content. Similarly DataTable itself
                 also provides <i>header</i> and <i>footer</i> properties for the main header and footer of the table.</p>
 
@@ -446,8 +576,8 @@ export class DataTableTemplatingDemo extends Component {
             <DataTable value={this.state.cars} header={header} footer={footer}>
                 <Column field="vin" header="Vin" />
                 <Column field="year" header="Year" />
-                <Column field="brand" header="Brand" bodyTemplate={this.brandTemplate} style={{textAlign:'center'}}/>
-                <Column field="color" header="Color" bodyTemplate={this.colorTemplate} />
+                <Column field="brand" header="Brand" body={this.brandTemplate} style={{textAlign:'center'}}/>
+                <Column field="color" header="Color" body={this.colorTemplate} />
                 <Column body={this.actionTemplate} style={{textAlign:'center', width: '6em'}}/>
             </DataTable>
         );
@@ -514,7 +644,7 @@ export class DataTableColGroupDemo extends Component {
                             </Row>
                          </ColumnGroup>;
         return (
-            <DataTable value={this.state.sales} headerColumnGroup={headerGroup} footerColumnGroup={footerGroup}>                        
+            <DataTable value={this.state.sales} headerColumnGroup={headerGroup} footerColumnGroup={footerGroup}>
                 <Column field="brand" />
                 <Column field="lastYearSale" />
                 <Column field="thisYearSale" />
@@ -531,7 +661,7 @@ export class DataTableColGroupDemo extends Component {
             <p>When using sorting with column groups, define sort properties like sortable at columns inside column groups not at the direct children of DataTable component.</p>
 
             <h3>Pagination</h3>
-            <p>Pagination is enabled by setting <i>paginator</i> property to true, <i>rows</i> property defines the number of rows per page and optionally <i>pageLinks</i> specify the the number of page links to display. 
+            <p>Pagination is enabled by setting <i>paginator</i> property to true, <i>rows</i> property defines the number of rows per page and optionally <i>pageLinks</i> specify the the number of page links to display.
             See <Link to="/paginator">paginator</Link> component for more information about further customization options such as <i>paginator template</i>.</p>
 
             <p>Pagination can either be used in <b>Controlled</b> or <b>Uncontrolled</b> manner. In controlled mode, <i>first</i> and <i>onPage</i> properties need to be defined to control the paginator state.</p>
@@ -566,7 +696,7 @@ export class DataTablePaginatorDemo extends Component {
 `}
 </CodeHighlight>
 
-            <p>In uncontrolled mode, only <i>paginator</i> and <i>rows</i> need to be enabled. Index of the first record can be still be provided using the <i>first</i> property in uncontrolled mode however 
+            <p>In uncontrolled mode, only <i>paginator</i> and <i>rows</i> need to be enabled. Index of the first record can be still be provided using the <i>first</i> property in uncontrolled mode however
             it is evaluated at initial rendering and ignored in further updates. If you programmatically need to update the paginator state, prefer to use the component as controlled.</p>
 <CodeHighlight className="language-javascript">
 {`
@@ -602,7 +732,7 @@ export class DataTablePaginatorDemo extends Component {
             <p>Elements of the paginator can be customized using the <i>paginatorTemplate</i> by the DataTable. Refer to the template section of the <Link to="/paginator"> paginator documentation</Link> for further options.</p>
 <CodeHighlight className="language-jsx">
 {`
-<DataTable value={this.state.cars} paginator={true} rows={10} first={start} 
+<DataTable value={this.state.cars} paginator={true} rows={10} first={start}
     paginatorTemplate="RowsPerPageDropdown PageLinks FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink">
     <Column field="vin" header="Vin" />
     <Column field="year" header="Year" />
@@ -631,7 +761,7 @@ export class DataTablePaginatorDemo extends Component {
 </CodeHighlight>
 
 
-            <p>In case you'd like to display the table as sorted per a single column by default on mount, use <i>sortField</i> and <i>sortOrder</i> properties in <b>Controlled</b> or <b>Uncontrolled</b> manner. 
+            <p>In case you'd like to display the table as sorted per a single column by default on mount, use <i>sortField</i> and <i>sortOrder</i> properties in <b>Controlled</b> or <b>Uncontrolled</b> manner.
             In controlled mode, <i>sortField</i>, <i>sortOrder</i> and <i>onSort</i> properties need to be defined to control the sorting state.</p>
 
 <CodeHighlight className="language-jsx">
@@ -668,7 +798,7 @@ multiSortMeta.push({field: 'brand', order: -1});
 `}
 </CodeHighlight>
 
-            <p>In uncontrolled mode, no additional properties need to be enabled. Initial sort field can be still be provided using the <i>sortField</i> property in uncontrolled mode however 
+            <p>In uncontrolled mode, no additional properties need to be enabled. Initial sort field can be still be provided using the <i>sortField</i> property in uncontrolled mode however
             it is evaluated at initial rendering and ignored in further updates. If you programmatically need to update the sorting state, prefer to use the component as controlled.</p>
 
             <CodeHighlight className="language-jsx">
@@ -683,12 +813,12 @@ multiSortMeta.push({field: 'brand', order: -1});
 `}
 </CodeHighlight>
 
-            <p>To customize sorting algorithm, set sortable option to custom and define a sortFunction that sorts the list.</p>
+            <p>To customize sorting algorithm, define a sortFunction that sorts the list.</p>
 <CodeHighlight className="language-jsx">
 {`
 <DataTable value={this.state.cars} >
     <Column field="vin" header="Vin" sortable={true}/>
-    <Column field="year" header="Year" sortable="custom" sortFunction={this.mysort}/>
+    <Column field="year" header="Year" sortable={true} sortFunction={this.mysort}/>
     <Column field="brand" header="Brand" sortable={true}/>
     <Column field="color" header="Color" sortable={true}/>
 </DataTable>
@@ -706,6 +836,19 @@ mysort(event) {
 `}
 </CodeHighlight>
 
+            <p>Getting access to the sorted data is provided by the <i>onValueChange</i> callback.</p>
+            <CodeHighlight className="language-javascript">
+{`
+<DataTable value={this.state.cars} onValueChange={sortedData => console.log(sortedData)}>
+    <Column field="vin" header="Vin" sortable={true} />
+    <Column field="year" header="Year" sortable={true} />
+    <Column field="brand" header="Brand" sortable={true} />
+    <Column field="color" header="Color" sortable={true} />
+</DataTable>
+
+`}
+</CodeHighlight>
+
             <h3>Filtering</h3>
             <p>Filtering is enabled by setting the <i>filter</i> property as true on a column. Default match mode is "startsWith" and this can be configured using <i>filterMatchMode</i> property that also accepts "contains", "endsWith", "equals", "notEquals" and "in" as available modes.</p>
  <CodeHighlight className="language-jsx">
@@ -718,10 +861,10 @@ mysort(event) {
 </DataTable>
 
 `}
-</CodeHighlight>    
+</CodeHighlight>
 
-            <p>An optional global filter feature is available to search all fields with the same keyword, 
-                to implement this place an input component whose value is bound to the globalFilter property of the DataTable.</p>    
+            <p>An optional global filter feature is available to search all fields with the same keyword,
+                to implement this place an input component whose value is bound to the globalFilter property of the DataTable.</p>
 <CodeHighlight className="language-javascript">
 {`
 export class DataTableFilterDemo extends Component {
@@ -804,7 +947,7 @@ export class DataTableCustomFilterDemo extends Component {
                 {label: 'Volvo', value: 'Volvo'}
             ];
 
-        let brandFilter = <Dropdown style={{width: '100%'}} className="ui-column-filter" 
+        let brandFilter = <Dropdown style={{width: '100%'}} className="ui-column-filter"
                 value={this.state.brand} options={brands} onChange={this.onBrandChange}/>
 
         let colors = [
@@ -819,7 +962,7 @@ export class DataTableCustomFilterDemo extends Component {
             {label: 'Blue', value: 'Blue'}
         ];
 
-        let colorFilter = <MultiSelect style={{width:'100%'}} className="ui-column-filter" 
+        let colorFilter = <MultiSelect style={{width:'100%'}} className="ui-column-filter"
             value={this.state.colors} options={colors} onChange={this.onColorChange}/>
 
         return (
@@ -836,7 +979,7 @@ export class DataTableCustomFilterDemo extends Component {
 `}
 </CodeHighlight>
 
-            <p>In case you'd like to display the table as filtered by default on mount, use <i>filters</i> property in <b>Controlled</b> or <b>Uncontrolled</b> manner. 
+            <p>In case you'd like to display the table as filtered by default on mount, use <i>filters</i> property in <b>Controlled</b> or <b>Uncontrolled</b> manner.
             In controlled mode, <i>filters</i> and <i>onFilter</i> properties need to be defined to control the filtering state.</p>
 
 <CodeHighlight className="language-javascript">
@@ -874,7 +1017,7 @@ export class DataTableDefaultFilteredDemo extends Component {
 `}
 </CodeHighlight>
 
-            <p>In uncontrolled filtering, no additional properties need to be enabled. Initial filtering can be still be provided using the <i>filters</i> property in uncontrolled mode however 
+            <p>In uncontrolled filtering, no additional properties need to be enabled. Initial filtering can be still be provided using the <i>filters</i> property in uncontrolled mode however
             it is evaluated at initial rendering and ignored in further updates. If you programmatically need to update the filtering state, prefer to use the component as controlled.</p>
 
             <CodeHighlight className="language-jsx">
@@ -924,6 +1067,19 @@ export class DataTableFilterDemo extends Component {
 `}
 </CodeHighlight>
 
+            <p>Getting access to the filtered data is provided by the <i>onValueChange</i> callback.</p>
+            <CodeHighlight className="language-javascript">
+{`
+<DataTable value={this.state.cars} onValueChange={filteredData => console.log(filteredData)}>
+    <Column field="vin" header="Vin" filter={true} />
+    <Column field="year" header="Year" filter={true} />
+    <Column field="brand" header="Brand" filter={true} />
+    <Column field="color" header="Color" filter={true}  />
+</DataTable>
+
+`}
+</CodeHighlight>
+
             <h3>Selection</h3>
             <p>DataTable provides single and multiple selection modes on click of a row. Selected rows are bound to the <i>selection</i> property for reading and updated using <i>onSelectionChange</i> callback.
                 Alternatively column based selection can be done using radio buttons or checkboxes using <i>selectionMode</i> of a particular column. In addition <i>onRowSelect</i>-<i>onRowUnselect</i> events are provided as optional callbacks.</p>
@@ -947,7 +1103,7 @@ export class DataTableSelectionDemo extends Component {
     render() {
         return (
             <DataTable value={this.state.cars} selectionMode="single"
-                selection={this.state.selectedCar1} onSelectionChange={(e) => this.setState({selectedCar1: e.data})}>
+                selection={this.state.selectedCar1} onSelectionChange={e => this.setState({selectedCar1: e.value})}>
                 <Column field="vin" header="Vin" />
                 <Column field="year" header="Year" />
                 <Column field="brand" header="Brand" />
@@ -960,7 +1116,7 @@ export class DataTableSelectionDemo extends Component {
 `}
 </CodeHighlight>
 
-            <p>In multiple mode, selection binding should be an array and multiple items can either be selected using metaKey or toggled individually depending on the value of metaKeySelection property value which is true by default. 
+            <p>In multiple mode, selection binding should be an array and multiple items can either be selected using metaKey or toggled individually depending on the value of metaKeySelection property value which is true by default.
                 On touch enabled devices metaKeySelection is turned off automatically. Additionally ShiftKey is supported for range selection.</p>
 
 <CodeHighlight className="language-javascript">
@@ -980,7 +1136,7 @@ export class DataTableSelectionDemo extends Component {
     render() {
         return (
             <DataTable value={this.state.cars} selectionMode="multiple"
-                selection={this.state.selectedCars} onSelectionChange={(e) => this.setState({selectedCars: e.data})}>
+                selection={this.state.selectedCars} onSelectionChange={e => this.setState({selectedCars: e.value})}>
                 <Column field="vin" header="Vin" />
                 <Column field="year" header="Year" />
                 <Column field="brand" header="Brand" />
@@ -997,7 +1153,7 @@ export class DataTableSelectionDemo extends Component {
                  Following datatable displays a checkbox at the first column of each row and automatically adds a header checkbox to toggle selection of all rows.</p>
 <CodeHighlight className="language-jsx">
 {`
-<DataTable value={this.state.cars} selection={this.state.selectedCars} onSelectionChange={(e) => this.setState({selectedCars: e.data})}>
+<DataTable value={this.state.cars} selection={this.state.selectedCars} onSelectionChange={e => this.setState({selectedCars: e.value})}>
     <Column selectionMode="multiple" />
     <Column field="vin" header="Vin" />
     <Column field="year" header="Year" />
@@ -1008,10 +1164,10 @@ export class DataTableSelectionDemo extends Component {
 `}
 </CodeHighlight>
 
-            <h3>Incell Editing</h3>
+            <h3>Cell Editing</h3>
             <p>Incell editing feature provides a way to quickly edit data inside the table. A cell editor is defined using the <i>editor</i> property
             that refers to a function to return an input element for the editing.</p>
-            
+
 <CodeHighlight className="language-jsx">
 {`
 <DataTable value={this.state.cars}>
@@ -1030,7 +1186,7 @@ onEditorValueChange(props, value) {
     updatedCars[props.rowIndex][props.field] = value;
     this.setState({cars: updatedCars});
 }
-    
+
 vinEditor(props) {
     return <InputText type="text" value={this.state.cars[props.rowIndex]['vin']} onChange={(e) => this.onEditorValueChange(props, e.target.value)} />;
 }
@@ -1048,25 +1204,26 @@ brandEditor(props) {
         {label: 'VW', value: 'VW'},
         {label: 'Volvo', value: 'Volvo'}
     ];
-    
+
     return (
-        <Dropdown value={this.state.cars[props.rowIndex].brand} options={brands} 
+        <Dropdown value={this.state.cars[props.rowIndex].brand} options={brands}
                 onChange={(e) => this.onEditorValueChange(props, e.value)} style={{width:'100%'}} placeholder="Select a City"/>
     );
 }
 
-saleDateEditor(props) {        
+saleDateEditor(props) {
     return (
         <Calendar value={this.state.cars[props.rowIndex].saleDate}
                 onChange={(e) => this.onEditorValueChange(props, e.value)} style={{width:'100%'}} />
     );
 }
-    
+
 `}
 </CodeHighlight>
 
-            <p>Clicking outside the cell or hitting enter key closes the cell, however this may not be desirable if the input is valid. In order
-            to decide whether to keep the cell open or not, provide a <i>editorValidator</i> function that validates the value.</p>
+            <p>Clicking outside the cell or hitting enter key closes the cell, however this may not be desirable if the input is invalid. In order
+            to decide whether to keep the cell open or not, provide a <i>editorValidator</i> function that validates the value. Optionally <i>onEditorSubmit</i> and <i>onEditorCancel</i>
+            events are available at the column component to provide callbacks whenever an editor is submitted or cancelled.</p>
 
 <CodeHighlight className="language-jsx">
 {`
@@ -1078,7 +1235,7 @@ saleDateEditor(props) {
 
 `}
 </CodeHighlight>
-            
+
 <CodeHighlight className="language-javascript">
 {`
 requiredValidator(props) {
@@ -1088,15 +1245,102 @@ requiredValidator(props) {
 `}
 </CodeHighlight>
 
+            <h3>Row Editing</h3>
+            <p>Row editing toggles the visibility of the all editors in the row at once and provides additional options to save and cancel editing.</p>
+
+<CodeHighlight className="language-jsx">
+{`
+<DataTable value={this.state.cars} editMode="row">
+    <Column field="vin" header="Vin" />
+    <Column field="brand" header="Brand" editor={this.brandEditor} onRowEditorValidator={this.onRowEditorValidator}/>
+    <Column field="saleDate" header="Sale Date" editor={this.saleDateEditor} >
+    <Column rowEditor={true} />
+</DataTable>
+
+`}
+</CodeHighlight>
+
+<CodeHighlight className="language-javascript">
+{`
+onEditorValueChange(props, value) {
+    let updatedCars = [...this.state.cars];
+    updatedCars[props.rowIndex][props.field] = value;
+    this.setState({cars: updatedCars});
+}
+
+brandEditor(props) {
+    let brands = [
+        {label: 'Audi', value: 'Audi'},
+        {label: 'BMW', value: 'BMW'},
+        {label: 'Fiat', value: 'Fiat'},
+        {label: 'Ford', value: 'Ford'},
+        {label: 'Honda', value: 'Honda'},
+        {label: 'Jaguar', value: 'Jaguar'},
+        {label: 'Mercedes', value: 'Mercedes'},
+        {label: 'Renault', value: 'Renault'},
+        {label: 'VW', value: 'VW'},
+        {label: 'Volvo', value: 'Volvo'}
+    ];
+
+    return (
+        <Dropdown value={this.state.cars[props.rowIndex].brand} options={brands}
+                onChange={(e) => this.onEditorValueChange(props, e.value)} style={{width:'100%'}} placeholder="Select a City"/>
+    );
+}
+
+saleDateEditor(props) {
+    return (
+        <Calendar value={this.state.cars[props.rowIndex].saleDate}
+                onChange={(e) => this.onEditorValueChange(props, e.value)} style={{width:'100%'}} />
+    );
+}
+
+onRowEditorValidator(rowData) {
+    let value = rowData['brand'];
+    return value.length > 0;
+}
+
+onRowEditInit(event) {
+    this.clonedCars[event.data.vin] = {...event.data};
+}
+
+onRowEditSave(event) {
+    if (this.onRowEditorValidator(event.data)) {
+        delete this.clonedCars[event.data.vin];
+        // Success message
+    }
+    else {
+        // Error message
+    }
+}
+
+onRowEditCancel(event) {
+    let cars = [...this.state.cars];
+    cars[event.index] = this.clonedCars[event.data.vin];
+    delete this.clonedCars[event.data.vin];
+    this.setState({
+        cars
+    })
+}
+
+`}
+</CodeHighlight>
+
             <h3>ContextMenu</h3>
-            <p>DataTable provides exclusive integration with ContextMenu by binding the reference of a menu to the <i>contextMenu</i> property.</p>
+            <p>DataTable provides exclusive integration with ContextMenu.  <i>contextMenuSelection</i> and <i>onContextMenuSelectionChange</i> are used to get a reference of the the selected row
+            and <i>onContextMenu</i> callback is utilized to display a particular context menu.</p>
 <CodeHighlight className="language-javascript">
 {`
 export class DataTableContextMenuDemo extends Component {
 
     constructor() {
         super();
-        this.state = {};
+        this.state = {
+            menu: [
+                {label: 'View', icon: 'pi pi-fw pi-search', command: (event) => this.viewCar(this.state.selectedCar)},
+                {label: 'Delete', icon: 'pi pi-fw pi-times', command: (event) => this.deleteCar(this.state.selectedCar)}
+            ]
+        };
         this.carservice = new CarService();
         this.viewCar = this.viewCar.bind(this);
         this.deleteCar = this.deleteCar.bind(this);
@@ -1121,19 +1365,15 @@ export class DataTableContextMenuDemo extends Component {
     }
 
     render() {
-        let items = [
-            {label: 'View', icon: 'pi pi-search', command: (event) => this.viewCar(this.state.selectedCar)},
-            {label: 'Delete', icon: 'pi pi-times', command: (event) => this.deleteCar(this.state.selectedCar)}
-        ];
-
         return (
             <div>
                 <Growl ref={(el) => { this.growl = el; }}></Growl>
 
-                <ContextMenu model={items} ref={el => this.cm = el}/>
+                <ContextMenu model={this.state.menu} ref={el => this.cm = el} onHide={() => this.setState({selectedCar: null})}/>
 
-                <DataTable value={this.state.cars} contextMenu={this.cm} selectionMode="single" header="Right Click"
-                    selection={this.state.selectedCar} onSelectionChange={(e) => this.setState({selectedCar: e.data})}>
+                <DataTable value={this.state.cars} header="Right Click"
+                    contextMenuSelection={this.state.selectedCar} onContextMenuSelectionChange={e => this.setState({selectedCar: e.value})}
+                    onContextMenu={e => this.cm.show(e.originalEvent)}>
                     <Column field="vin" header="Vin" />
                     <Column field="year" header="Year" />
                     <Column field="brand" header="Brand" />
@@ -1146,11 +1386,12 @@ export class DataTableContextMenuDemo extends Component {
 
 `}
 </CodeHighlight>
-            
+
 
             <h3>Expandable Rows</h3>
             <p>Row expansion allows displaying detailed content for a particular row. To use this feature, add an <i>expander</i> column, define a <i>rowExpansionTemplate</i> as a function to return the expanded content and bind to
-                <i>expandedRows</i> property to read the expanded rows along with the <i>onRowToggle</i> property to update it.</p>
+                <i>expandedRows</i> property to read the expanded rows along with the <i>onRowToggle</i> property to update it. <i>expandedRows</i> property either accepts an array of row data or a map whose key is the dataKey of the record.
+                Using expandable rows with a dataKey is suggested for better performance.</p>
 
 <CodeHighlight className="language-javascript">
 {`
@@ -1158,7 +1399,10 @@ export class DataTableRowExpansionDemo extends Component {
 
     constructor() {
         super();
-        this.state = {};
+        this.state = {
+            cars: null,
+            expandedRows: null
+        };
         this.carservice = new CarService();
         this.rowExpansionTemplate = this.rowExpansionTemplate.bind(this);
     }
@@ -1194,8 +1438,8 @@ export class DataTableRowExpansionDemo extends Component {
 
     render() {
         return (
-            <DataTable value={this.state.cars} expandedRows={this.state.expandedRows} onRowToggle={(e) => this.setState({expandedRows:e.data})}     
-                    rowExpansionTemplate={this.rowExpansionTemplate}>
+            <DataTable value={this.state.cars} expandedRows={this.state.expandedRows} onRowToggle={(e) => this.setState({expandedRows:e.data})}
+                    rowExpansionTemplate={this.rowExpansionTemplate} dataKey="vin">
                 <Column expander={true} style={{width: '2em'}} />
                 <Column field="vin" header="Vin" />
                 <Column field="year" header="Year" />
@@ -1210,7 +1454,7 @@ export class DataTableRowExpansionDemo extends Component {
 </CodeHighlight>
 
             <h3>Column Resize</h3>
-            <p>Columns can be resized using drag drop by setting the <i>resizableColumns</i> to true. There are two resize modes; "fit" and "expand". Fit is the default one and the overall table width does not change when a column is resized. 
+            <p>Columns can be resized using drag drop by setting the <i>resizableColumns</i> to true. There are two resize modes; "fit" and "expand". Fit is the default one and the overall table width does not change when a column is resized.
                 In "expand" mode, table width also changes along with the column width. <i>onColumnResizeEnd</i> is a callback that passes the resized column header as a parameter.</p>
 <CodeHighlight className="language-jsx">
 {`
@@ -1313,7 +1557,7 @@ export class DataTableExportDemo extends Component {
             is done based on the sort field. In both cases, data should be sorted initally using the properties such as sortField and sortOrder. In "subheader" mode,
             <i>rowGroupHeaderTemplate</i> property should be defined to provide the content of the header and optionally <i>rowGroupFooterTemplate</i> is available to provide a footer
             for the group.</p>
-            
+
             <CodeHighlight className="language-javascript">
             {`
 export class DataTableRowGroupDemo extends Component {
@@ -1323,20 +1567,20 @@ export class DataTableRowGroupDemo extends Component {
         this.state = {
             car: null
         };
-        
+
         this.carservice = new CarService()
         this.headerTemplate = this.headerTemplate.bind(this);
         this.footerTemplate = this.footerTemplate.bind(this);
     }
-    
+
     componentDidMount() {
         this.carservice.getCarsMedium().then(data => this.setState({cars: data}));
     }
-    
+
     headerTemplate(data) {
         return data.brand;
     }
-    
+
     footerTemplate(data, index) {
         return ([
                     <td key={data.brand + '_footerTotalLabel'} colSpan="3" style={{textAlign: 'right'}}>Total Price</td>,
@@ -1344,10 +1588,10 @@ export class DataTableRowGroupDemo extends Component {
             ]
         );
     }
-    
+
     calculateGroupTotal(brand) {
         let total = 0;
-        
+
         if(this.state.cars) {
             for(let car of this.state.cars) {
                 if(car.brand === brand) {
@@ -1362,17 +1606,17 @@ export class DataTableRowGroupDemo extends Component {
     render() {
         return (
             <div>
-                <DataTable header="SubHeader" value={this.state.cars} rowGroupMode="subheader" sortField="brand" sortOrder={1} groupField="brand"     
-                    rowGroupHeaderTemplate={this.headerTemplate} rowGroupFooterTemplate={this.footerTemplate}>           
+                <DataTable header="SubHeader" value={this.state.cars} rowGroupMode="subheader" sortField="brand" sortOrder={1} groupField="brand"
+                    rowGroupHeaderTemplate={this.headerTemplate} rowGroupFooterTemplate={this.footerTemplate}>
                     <Column field="vin" header="Vin" />
                     <Column field="year" header="Year" />
                     <Column field="color" header="Color" />
                     <Column field="price" header="Price" />
                 </DataTable>
-                
-                <DataTable header="RowSpan" value={this.state.cars} rowGroupMode="rowspan" sortField="brand" sortOrder={1} groupField="brand"     
-                    style={{marginTop:'30px'}}>    
-                    <Column field="brand" header="Brand" />       
+
+                <DataTable header="RowSpan" value={this.state.cars} rowGroupMode="rowspan" sortField="brand" sortOrder={1} groupField="brand"
+                    style={{marginTop:'30px'}}>
+                    <Column field="brand" header="Brand" />
                     <Column field="year" header="Year" />
                     <Column field="color" header="Color" />
                     <Column field="vin" header="Vin" />
@@ -1410,28 +1654,38 @@ export class DataTableRowGroupDemo extends Component {
 </DataTable>
 
 `}
-</CodeHighlight> 
+</CodeHighlight>
 
-            <p>Certain columns can be frozen by using the <i>frozen</i> property of the column component. Widths of the frozen and unfrozen sections are defined with <i>frozenWidth</i> and <i>unfrozenWidth</i> properties where
-                total of these values should equal to the width of the DataTable itself.</p>
+            <p>Certain columns can be frozen by using the <i>frozen</i> property of the column component. Widths of the frozen section is specified by the <i>frozenWidth</i> property.</p>
 
 <CodeHighlight className="language-jsx">
 {`
-<DataTable value={this.state.cars} scrollable={true} scrollHeight="200px" style={{width: '600px'}}>
-    <DataTable value={this.state.cars} scrollable={true} scrollHeight="200px" style={{width: '800px'}} frozenWidth="200px" unfrozenWidth="600px">
-        <Column field="vin" header="Vin" style={{width:'250px'}} frozen={true} />
-        <Column field="year" header="Year" style={{width:'250px'}} />
-        <Column field="brand" header="Brand" style={{width:'250px'}} />
-        <Column field="color" header="Color" style={{width:'250px'}} />
-        <Column field="owner" header="Owner" style={{width:'250px'}} />
-        <Column field="tyre" header="Tyre" style={{width:'250px'}} />
-        <Column field="capacity" header="Capacity" style={{width:'250px'}} />
-        <Column field="engine" header="Engine" style={{width:'250px'}} />
-    </DataTable>
+<DataTable value={this.state.cars} scrollable={true} scrollHeight="200px" style={{width: '800px'}} frozenWidth="200px">
+    <Column field="vin" header="Vin" style={{width:'250px'}} frozen={true} />
+    <Column field="year" header="Year" style={{width:'250px'}} />
+    <Column field="brand" header="Brand" style={{width:'250px'}} />
+    <Column field="color" header="Color" style={{width:'250px'}} />
+    <Column field="owner" header="Owner" style={{width:'250px'}} />
+    <Column field="tyre" header="Tyre" style={{width:'250px'}} />
+    <Column field="capacity" header="Capacity" style={{width:'250px'}} />
+    <Column field="engine" header="Engine" style={{width:'250px'}} />
 </DataTable>
 
 `}
-</CodeHighlight> 
+</CodeHighlight>
+
+            <p>Note that frozen columns are enabled, frozen and scrollable cells may have content with varying height which leads to misalignment. Provide fixed height to cells to avoid alignment issues.</p>
+            <CodeHighlight className="language-jsx">
+{`
+<DataTable value={this.state.cars} scrollable={true} scrollHeight="200px" style={{width: '800px'}} frozenWidth="200px">
+    <Column field="vin" header="Vin" style={{width:'250px', height: '25px'}} frozen={true} />
+    <Column field="year" header="Year" style={{width:'250px', height: '25px'}} />
+    <Column field="brand" header="Brand" style={{width:'250px', height: '25px'}} />
+    <Column field="color" header="Color" style={{width:'250px', height: '25px'}} />
+</DataTable>
+
+`}
+</CodeHighlight>
 
             <p>One or more rows can be displayed as fixed using the <i>frozenValue</i> property.</p>
 <CodeHighlight className="language-jsx">
@@ -1444,15 +1698,18 @@ export class DataTableRowGroupDemo extends Component {
 </DataTable>
 
 `}
-</CodeHighlight> 
+</CodeHighlight>
 
             <p>When using frozen columns with column grouping, use <i>frozenHeaderColumnGroup</i> and <i>frozenFooterColumnGroup</i> properties along with
             <i>headerColumnGroup</i> and <i>footerColumnGroup</i>.</p>
 
-            <p>Virtual scrolling is enabled using <i>virtualScroll</i>, <i>onVirtualScroll</i> properties combined with lazy loading so that data is loaded on the fly during scrolling. View the <Link to="/datatable/scroll">scrolling demo</Link> for a sample implementation.</p>
+            <p>Virtual scrolling is enabled using <i>virtualScroll</i> and <i>onVirtualScroll</i> properties combined with lazy loading so that data is loaded on the fly during scrolling.
+            For smooth scrolling twice the amount of rows property is loaded on a lazy load event. In addition, to avoid performance problems row height is not calculated automatically and
+            should be provided using <i>virtualRowHeight</i> property which defaults to 28px. View the <Link to="/datatable/scroll">scrolling demo</Link> for a sample implementation.</p>
+
 <CodeHighlight className="language-jsx">
 {`
-<DataTable value={this.state.lazyCars} scrollable={true} scrollHeight="200px" virtualScroll={true} 
+<DataTable value={this.state.lazyCars} scrollable={true} scrollHeight="200px" virtualScroll={true}
     rows={10} totalRecords={this.state.lazyTotalRecords} lazy={true} onVirtualScroll={this.loadCarsLazy} style={{marginTop:'30px'}}>
     <Column field="vin" header="Vin" />
     <Column field="year" header="Year" />
@@ -1461,11 +1718,11 @@ export class DataTableRowGroupDemo extends Component {
 </DataTable>
 
 `}
-</CodeHighlight>  
+</CodeHighlight>
 
             <h3>Lazy Loading</h3>
-            <p>Lazy mode is handy to deal with large datasets, instead of loading the entire data, small chunks of data is loaded by invoking corresponding callbacks everytime paging, sorting and filtering happens. Sample belows imitates 
-            lazy paging by using an in memory list. It is also important to assign the logical number of rows to totalRecords by doing a projection query for paginator configuration so that paginator displays the UI assuming 
+            <p>Lazy mode is handy to deal with large datasets, instead of loading the entire data, small chunks of data is loaded by invoking corresponding callbacks everytime paging, sorting and filtering happens. Sample belows imitates
+            lazy paging by using an in memory list. It is also important to assign the logical number of rows to totalRecords by doing a projection query for paginator configuration so that paginator displays the UI assuming
             there are actually records of totalRecords size although in reality they aren't as in lazy mode, only the records that are displayed on the current page exist.</p>
 
             <p>In lazy mode, pagination, sorting and filtering must be used in controlled mode in addition to enabling <i>lazy</i> property. Here is a sample paging implementation with in memory data.</p>
@@ -1506,7 +1763,7 @@ export class DataTableLazyDemo extends Component {
         setTimeout(() => {
             const startIndex = event.first;
             const endIndex = event.first + this.state.rows;
-    
+
             this.setState({
                 first: startIndex,
                 cars: this.datasource.slice(startIndex, endIndex),
@@ -1528,7 +1785,43 @@ export class DataTableLazyDemo extends Component {
 }
 
 `}
-</CodeHighlight> 
+</CodeHighlight>
+
+            <h3>TableState</h3>
+            <p>Stateful table allows keeping the state such as page, sort and filtering either at local storage or session storage so that when the page is visited again,
+                table would render the data using its last settings. Enabling state is easy as defining a unique <i>stateKey</i>, the storage to keep the state is defined with the <i>stateStorage</i> property that accepts session for sessionStorage and local for localStorage.
+                Currently following features are supported by TableState; paging, sorting, filtering, column resizing, column reordering, row expansion and row selection.</p>
+
+<CodeHighlight className="language-javascript">
+{`
+export class DataTableStateDemo extends Component {
+
+    constructor() {
+        super();
+        this.state = {};
+        this.carservice = new CarService();
+    }
+
+    componentDidMount() {
+        this.carservice.getCarsSmall().then(data => this.setState({cars: data}));
+    }
+
+    render() {
+        return (
+            <DataTable value={this.state.cars} selectionMode="multiple" resizableColumns={true}
+                        selection={this.state.selectedCars} onSelectionChange={e => this.setState({selectedCars: e.value})}
+                        paginator={true} rows={10} stateKey="tablestatedemo-session">
+                <Column field="vin" header="Vin" sortable={true} filter={true}/>
+                <Column field="year" header="Year" sortable={true} filter={true}/>
+                <Column field="brand" header="Brand" sortable={true} filter={true}/>
+                <Column field="color" header="Color" sortable={true} filter={true}/>
+            </DataTable>
+        );
+    }
+}
+
+`}
+</CodeHighlight>
 
             <h3>Responsive</h3>
             <p>DataTable columns are displayed as stacked in responsive mode if the screen size becomes smaller than a certain breakpoint value. This feature is enabled by setting responsive to true.</p>
@@ -1625,7 +1918,7 @@ export class DataTableLazyDemo extends Component {
                         <tr>
                             <td>paginatorTemplate</td>
                             <td>string</td>
-                            <td>FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown</td>
+                            <td>FirstPageLink PrevPageLink PageLinks <br /> NextPageLink LastPageLink RowsPerPageDropdown</td>
                             <td>Template of the paginator.</td>
                         </tr>
                         <tr>
@@ -1651,6 +1944,12 @@ export class DataTableLazyDemo extends Component {
                             <td>array</td>
                             <td>null</td>
                             <td>Array of integer values to display inside rows per page dropdown.</td>
+                        </tr>
+                        <tr>
+                            <td>currentPageReportTemplate</td>
+                            <td>string</td>
+                            <td>(&#123;currentPage&#125; of &#123;totalPages&#125;)</td>
+                            <td>Template of the current page report element.</td>
                         </tr>
                         <tr>
                             <td>first</td>
@@ -1701,6 +2000,18 @@ export class DataTableLazyDemo extends Component {
                             <td>Defines whether sorting works on single column or on multiple columns.</td>
                         </tr>
                         <tr>
+                            <td>defaultSortOrder</td>
+                            <td>number</td>
+                            <td>1</td>
+                            <td>Default sort order of an unsorted column.</td>
+                        </tr>
+                        <tr>
+                            <td>removableSort</td>
+                            <td>boolean</td>
+                            <td>false</td>
+                            <td>When enabled, columns can have an un-sorted state.</td>
+                        </tr>
+                        <tr>
                             <td>emptyMessage</td>
                             <td>string</td>
                             <td>No records found</td>
@@ -1719,47 +2030,55 @@ export class DataTableLazyDemo extends Component {
                             <td>Selected row in single mode or an array of values in multiple mode.</td>
                         </tr>
                         <tr>
+                            <td>contextMenuSelection</td>
+                            <td>any</td>
+                            <td>null</td>
+                            <td>Selected row in single mode or an array of values in multiple mode.</td>
+                        </tr>
+                        <tr>
                             <td>compareSelectionBy</td>
                             <td>string</td>
                             <td>deepEquals</td>
-                            <td>Algorithm to define if a row is selected, valid values are "equals" that compares by reference and "deepEquals" that compares all fields.</td>
+                            <td>Algorithm to define if a row is selected, valid values are "equals" that compares by reference and <br/> "deepEquals" that compares all fields.</td>
                         </tr>
                         <tr>
                             <td>dataKey</td>
                             <td>string</td>
                             <td>null</td>
-                            <td> </td>
+                            <td>A property to uniquely identify a record in data.</td>
                         </tr>
                         <tr>
                             <td>metaKeySelection</td>
                             <td>boolean</td>
                             <td>true</td>
-                            <td>Defines whether metaKey is requred or not for the selection. When true metaKey needs to be pressed to select or unselect an item and when set to false selection of each item
+                            <td>Defines whether metaKey is requred or not for the selection. <br/>
+                                When true metaKey needs to be pressed to select or unselect an item and <br/>
+                                when set to false selection of each item
                                 can be toggled individually. On touch enabled devices, metaKeySelection is turned off automatically.</td>
                         </tr>
                         <tr>
                             <td>headerColumnGroup</td>
                             <td>ColumnGroup</td>
                             <td>null</td>
-                            <td>ColumnCroup component for header.</td>
+                            <td>ColumnGroup component for header.</td>
                         </tr>
                         <tr>
                             <td>footerColumnGroup</td>
                             <td>ColumnGroup</td>
                             <td>null</td>
-                            <td>ColumnCroup component for footer.</td>
+                            <td>ColumnGroup component for footer.</td>
                         </tr>
                         <tr>
                             <td>frozenHeaderColumnGroup</td>
                             <td>ColumnGroup</td>
                             <td>null</td>
-                            <td>ColumnCroup component for header of frozen columns.</td>
+                            <td>ColumnGroup component for header of frozen columns.</td>
                         </tr>
                         <tr>
                             <td>frozenFooterColumnGroup</td>
                             <td>ColumnGroup</td>
                             <td>null</td>
-                            <td>ColumnCroup component for footer of frozen columns.</td>
+                            <td>ColumnGroup component for footer of frozen columns.</td>
                         </tr>
                         <tr>
                             <td>rowExpansionTemplate</td>
@@ -1769,9 +2088,9 @@ export class DataTableLazyDemo extends Component {
                         </tr>
                         <tr>
                             <td>expandedRows</td>
-                            <td>array</td>
+                            <td>array/object</td>
                             <td>null</td>
-                            <td>A collection of rows that are expanded.</td>
+                            <td>A collection of rows or a map object row data keys that are expanded.</td>
                         </tr>
                         <tr>
                             <td>responsive</td>
@@ -1789,7 +2108,7 @@ export class DataTableLazyDemo extends Component {
                             <td>columnResizeMode</td>
                             <td>string</td>
                             <td>fit</td>
-                            <td>Defines whether the overall table width should change on column resize, valid values are "fit" and "expand".</td>
+                            <td>Defines whether the overall table width should change on column resize, <br/> valid values are "fit" and "expand".</td>
                         </tr>
                         <tr>
                             <td>reorderableColumns</td>
@@ -1830,20 +2149,20 @@ export class DataTableLazyDemo extends Component {
                         <tr>
                             <td>virtualScrollDelay</td>
                             <td>number</td>
-                            <td>500</td>
+                            <td>250</td>
                             <td>Delay in virtual scroll before doing a call to lazy load.</td>
+                        </tr>
+                        <tr>
+                            <td>virtualRowHeight</td>
+                            <td>number</td>
+                            <td>28</td>
+                            <td>Height of a row to use in calculations of virtual scrolling.</td>
                         </tr>
                         <tr>
                             <td>frozenWidth</td>
                             <td>string</td>
                             <td>null</td>
                             <td>Width of the frozen part in scrollable DataTable.</td>
-                        </tr>
-                        <tr>
-                            <td>unfrozenWidth</td>
-                            <td>string</td>
-                            <td>null</td>
-                            <td>Width of the unfrozen part in scrollable DataTable.</td>
                         </tr>
                         <tr>
                             <td>frozenValue</td>
@@ -1864,12 +2183,6 @@ export class DataTableLazyDemo extends Component {
                             <td>Name of the exported file.</td>
                         </tr>
                         <tr>
-                            <td>contextMenu</td>
-                            <td>any</td>
-                            <td>null</td>
-                            <td>Context menu items.</td>
-                        </tr>
-                        <tr>
                             <td>rowGroupMode</td>
                             <td>string</td>
                             <td>null</td>
@@ -1885,7 +2198,7 @@ export class DataTableLazyDemo extends Component {
                             <td>rowClassName</td>
                             <td>function</td>
                             <td>null</td>
-                            <td>Function that takes the row data and returns an object in "&#123;'styleclass' : condition&#125;" format to define a classname for a particular now.</td>
+                            <td>Function that takes the row data and <br/> returns an object in "&#123;'styleclass' : condition&#125;" format to define a classname for a particular now.</td>
                         </tr>
                         <tr>
                             <td>rowGroupHeaderTemplate</td>
@@ -1911,6 +2224,44 @@ export class DataTableLazyDemo extends Component {
                             <td>pi pi-spinner</td>
                             <td>The icon to show while indicating data load is in progress.</td>
                         </tr>
+                        <tr>
+                            <td>tabIndex</td>
+                            <td>string</td>
+                            <td>null</td>
+                            <td>Index of the element in tabbing order.</td>
+                        </tr>
+                        <tr>
+                            <td>stateKey</td>
+                            <td>string</td>
+                            <td>null</td>
+                            <td>Unique identifier of a stateful table to use in state storage.</td>
+                        </tr>
+                        <tr>
+                            <td>stateStorage</td>
+                            <td>string</td>
+                            <td>session</td>
+                            <td>Defines where a stateful table keeps its state, <br/> valid values are "session" for sessionStorage and "local" for localStorage.</td>
+                        </tr>
+                        <tr>
+                            <td>editMode</td>
+                            <td>string</td>
+                            <td>cell</td>
+                            <td>Defines editing mode, options are "cell" and "row".</td>
+                        </tr>
+                        <tr>
+                            <td>exportFunction</td>
+                            <td>function</td>
+                            <td>null</td>
+                            <td>A function to implement custom export. Need to return string value. <br />
+                                event.data: Field data. <br />
+                                event.rows: Column field.</td>
+                        </tr>
+                        <tr>
+                            <td>expandableRowGroups</td>
+                            <td>boolean</td>
+                            <td>false</td>
+                            <td>Makes row groups toggleable, default is false.</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -1929,9 +2280,16 @@ export class DataTableLazyDemo extends Component {
                         <tr>
                             <td>onSelectionChange</td>
                             <td>event.originalEvent: Browser event <br/>
-                                event.data: Selection object
+                                event.value: Selection object
                             </td>
                             <td>Callback to invoke when selection changes.</td>
+                        </tr>
+                        <tr>
+                            <td>onContextMenuSelectionChange</td>
+                            <td>event.originalEvent: Browser event <br/>
+                                event.value: Selection object
+                            </td>
+                            <td>Callback to invoke when a row selected with right click.</td>
                         </tr>
                         <tr>
                             <td>onRowToggle</td>
@@ -1962,13 +2320,6 @@ export class DataTableLazyDemo extends Component {
                             <td>onFilter</td>
                             <td>event.filters: Collection of active filters.</td>
                             <td>Callback to invoke on filtering.</td>
-                        </tr>
-                        <tr>
-                            <td>onVirtualScroll</td>
-                            <td>event.first = First row offset.  <br/>
-                                event.rows = Number of rows per page.
-                            </td>
-                            <td>Callback to invoke to load data on virtual scroll.</td>
                         </tr>
                         <tr>
                             <td>onVirtualScroll</td>
@@ -2017,7 +2368,7 @@ export class DataTableLazyDemo extends Component {
                             <td>Callback to invoke when a row is collapsed.</td>
                         </tr>
                         <tr>
-                            <td>onContextMenuSelect</td>
+                            <td>onContextMenu</td>
                             <td>event.originalEvent: Original event instance. <br />
                                 event.data: Collapsed row data</td>
                             <td>Callback to invoke when a context menu is clicked.</td>
@@ -2038,9 +2389,82 @@ export class DataTableLazyDemo extends Component {
                                 event.dropIndex: Index of the drop location</td>
                             <td>Callback to invoke when a row is reordered.</td>
                         </tr>
+                        <tr>
+                            <td>onValueChange</td>
+                            <td>value: Value displayed by the table.</td>
+                            <td>Callback to invoke after filtering and sorting to pass the rendered value.</td>
+                        </tr>
+                        <tr>
+                            <td>rowEditorValidator</td>
+                            <td>data: Editing row data</td>
+                            <td>Callback to invoke to validate the editing row when the save icon is clicked on row editing mode.</td>
+                        </tr>
+                        <tr>
+                            <td>onRowEditInit</td>
+                            <td>event.originalEvent: Browser event <br />
+                                event.data: Editing row data </td>
+                            <td>Callback to invoke when the editing icon is clicked on row editing mode.</td>
+                        </tr>
+                        <tr>
+                            <td>onRowEditSave</td>
+                            <td>event.originalEvent: Browser event <br />
+                                event.data: Editing row data</td>
+                            <td>Callback to invoke when the save icon is clicked on row editing mode.</td>
+                        </tr>
+                        <tr>
+                            <td>onRowEditCancel</td>
+                            <td>event.originalEvent: Browser event <br />
+                                event.data: Editing row data <br />
+                                event.index: Editing row data index</td>
+                            <td>Callback to invoke when the cancel icon is clicked on row editing mode.</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
+
+            <h3>Methods</h3>
+            <div className="doc-tablewrapper">
+                <table className="doc-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Parameters</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>reset</td>
+                            <td>-</td>
+                            <td>Resets sort, filter, paginator and columnorder state.</td>
+                        </tr>
+                        <tr>
+                            <td>exportCSV</td>
+                            <td>-</td>
+                            <td>Exports the data to CSV format.</td>
+                        </tr>
+                        <tr>
+                            <td>filter</td>
+                            <td>value: the filter value <br />
+                                field: the filter field <br />
+                                mode: "startsWith", "contains", "endsWidth", "equals", "notEquals", "in" and "custom".
+                            </td>
+                            <td>Filters the data.</td>
+                        </tr>
+                        <tr>
+                            <td>closeEditingCell</td>
+                            <td>-</td>
+                            <td>Closes the current editing cell when incell editing is enabled.</td>
+                        </tr>
+                        <tr>
+                            <td>resetColumnOrder</td>
+                            <td>-</td>
+                            <td>Resets column order when reorderableColumns is enabled.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
 
             <h3>Styling</h3>
             <p>Following is the list of structural style classes, for theming classes visit <Link to="/theming"> theming</Link> page.</p>
@@ -2111,7 +2535,7 @@ export class DataTableLazyDemo extends Component {
                 <h3>Dependencies</h3>
                 <p>None.</p>
             </div>
-            
+
             </TabPanel>
 
             <TabPanel header="Source">
@@ -2119,43 +2543,176 @@ export class DataTableLazyDemo extends Component {
                     <span>View on GitHub</span>
                 </a>
 
+                <p>DataTableDemo.css</p>
+<CodeHighlight className="language-javascript">
+{`
+.datatable-doc-demo .p-column-filter {
+    margin-top: 1em;
+}
+.datatable-doc-demo .p-dropdown-car-option {
+    display: flex;
+    align-items: center;
+    text-align: left;
+}
+.datatable-doc-demo .p-dropdown-car-option img {
+    margin-right: .5em;
+    width: 24px;
+}
+.datatable-doc-demo .p-dropdown-car-option span {
+    margin-top: .125em;
+}
+.datatable-doc-demo .p-datatable-globalfilter-container {
+    float: right;
+}
+.datatable-doc-demo .p-datatable-globalfilter-container input {
+    width: 250px;
+}
+.datatable-doc-demo .p-datatable.p-datatable-cars .p-datatable-header {
+    border: 0 none;
+    padding: 12px;
+    text-align: left;
+    font-size: 20px;
+}
+.datatable-doc-demo .p-datatable.p-datatable-cars .p-paginator {
+    border: 0 none;
+    padding: 1em;
+}
+.datatable-doc-demo .p-datatable.p-datatable-cars .p-datatable-thead > tr > th {
+    border: 0 none;
+    text-align: left;
+}
+.datatable-doc-demo .p-datatable.p-datatable-cars .p-column-title {
+    font-size: 16px;
+}
+.datatable-doc-demo .p-datatable.p-datatable-cars .p-datatable-tbody > tr > td {
+    border: 0 none;
+}
+`}
+</CodeHighlight>
+
 <CodeHighlight className="language-javascript">
 {`
 import React, { Component } from 'react';
-import {DataTable} from 'primereact/datatable';
-import {Column} from 'primereact/column';
-import {CarService} from '../service';
+import {Link} from 'react-router-dom';
+import {DataTable} from '../../components/datatable/DataTable';
+import {Column} from '../../components/column/Column';
+import {InputText} from '../../components/inputtext/InputText';
+import {Button} from '../../components/button/Button';
+import {CarService} from '../service/CarService';
+import {Dropdown} from '../../components/dropdown/Dropdown';
+import {MultiSelect} from '../../components/multiselect/MultiSelect';
+import "./DataTableDemo.css"
 
 export class DataTableDemo extends Component {
 
     constructor() {
         super();
         this.state = {
-            cars: []
+            cars: [],
+            brand: null,
+            colors: null,
+            selectedCar: null
         };
         this.carservice = new CarService();
+        this.onBrandChange = this.onBrandChange.bind(this);
+        this.onColorChange = this.onColorChange.bind(this);
+        this.brandTemplate = this.brandTemplate.bind(this);
+        this.actionTemplate = this.actionTemplate.bind(this);
+        this.filterBrandTemplate = this.filterBrandTemplate.bind(this);
     }
 
     componentDidMount() {
-        this.carservice.getCarsSmall().then(data => this.setState({cars: data}));
+        this.carservice.getCarsLarge().then(data => this.setState({cars: data}));
+    }
+
+    brandTemplate(rowData, column) {
+        var src = 'showcase/resources/demo/images/car/' + rowData.brand + '.png';
+        return (
+            <React.Fragment>
+                <img src={src} alt={rowData.brand} width="50px" style={{'verticalAlign': 'middle', 'marginRight': '1em'}} />
+                <span style={{'verticalAlign': 'middle'}}>{rowData.brand}</span>
+            </React.Fragment>
+        );
+    }
+
+    actionTemplate(rowData, column) {
+        return <React.Fragment>
+            <Button type="button" icon="pi pi-search" className="p-button-success" style={{marginRight: '.5em'}}></Button>
+            <Button type="button" icon="pi pi-pencil" className="p-button-warning"></Button>
+        </React.Fragment>;
+    }
+
+    filterBrandTemplate(option) {
+        if(!option.value) {
+            return option.label;
+        }
+        else {
+            var logoPath = 'showcase/resources/demo/images/car/' + option.label + '.png';
+
+            return (
+                <div className="p-clearfix p-dropdown-car-option">
+                    <img alt={option.label} src={logoPath} width="24"/>
+                    <span>{option.label}</span>
+                </div>
+            );
+        }
+    }
+
+    onBrandChange(event) {
+        this.dt.filter(event.value, 'brand', 'equals');
+        this.setState({brand: event.value});
+    }
+
+    onColorChange(event) {
+        this.dt.filter(event.value, 'color', 'in');
+        this.setState({colors: event.value});
     }
 
     render() {
-        const columns = [
-            {field: 'vin', header: 'Vin'},
-            {field: 'year', header: 'Year'},
-            {field: 'brand', header: 'Brand'},
-            {field: 'color', header: 'Color'}
+        var header = (
+            <div style={{'textAlign': 'left'}}>
+                List of Cars
+                <div  className="p-datatable-globalfilter-container">
+                    <InputText type="search" onInput={(e) => this.setState({globalFilter: e.target.value})} placeholder="Global Search" size="50"/>
+                </div>
+            </div>
+        );
+
+        let brands = [
+                {label: 'All Brands', value: null},
+                {label: 'Audi', value: 'Audi'},
+                {label: 'BMW', value: 'BMW'},
+                {label: 'Fiat', value: 'Fiat'},
+                {label: 'Honda', value: 'Honda'},
+                {label: 'Jaguar', value: 'Jaguar'},
+                {label: 'Mercedes', value: 'Mercedes'},
+                {label: 'Renault', value: 'Renault'},
+                {label: 'VW', value: 'VW'},
+                {label: 'Volvo', value: 'Volvo'}
+            ];
+
+        let brandFilter = <Dropdown style={{width: '100%'}} className="p-column-filter"
+                value={this.state.brand} options={brands} onChange={this.onBrandChange} itemTemplate={this.filterBrandTemplate}/>
+
+        let colors = [
+            {label: 'White', value: 'White'},
+            {label: 'Green', value: 'Green'},
+            {label: 'Silver', value: 'Silver'},
+            {label: 'Black', value: 'Black'},
+            {label: 'Red', value: 'Red'},
+            {label: 'Maroon', value: 'Maroon'},
+            {label: 'Brown', value: 'Brown'},
+            {label: 'Orange', value: 'Orange'},
+            {label: 'Blue', value: 'Blue'}
         ];
 
-        const dynamicColumns = columns.map((col,i) => {
-            return <Column key={col.field} field={col.field} header={col.header} />;
-        });
+        let colorFilter = <MultiSelect style={{width:'100%'}} className="p-column-filter"
+            value={this.state.colors} options={colors} onChange={this.onColorChange}/>
+
+        let actionHeader = <Button type="button" icon="pi pi-cog"></Button>
 
         return (
-            <div>
-                <DataTableSubmenu />
-
+            <div className="datatable-doc-demo">
                 <div className="content-section introduction">
                     <div className="feature-intro">
                         <h1>DataTable</h1>
@@ -2164,22 +2721,16 @@ export class DataTableDemo extends Component {
                 </div>
 
                 <div className="content-section implementation">
-                    <h3>Basic</h3>
-                    <DataTable value={this.state.cars}>
-                        <Column field="vin" header="Vin" />
-                        <Column field="year" header="Year" />
-                        <Column field="brand" header="Brand" />
-                        <Column field="color" header="Color" />
+                    <DataTable ref={(el) => this.dt = el} value={this.state.cars} paginator={true} rows={10} header={header}
+                            globalFilter={this.state.globalFilter} emptyMessage="No records found" className="p-datatable-cars"
+                            selectionMode="single" selection={this.state.selectedCar} onSelectionChange={e => this.setState({selectedCar: e.value})}>
+                        <Column field="vin" header="Vin" filter sortable />
+                        <Column field="year" header="Year" filter sortable />
+                        <Column field="brand" header="Brand" filter filterElement={brandFilter} sortable body={this.brandTemplate}/>
+                        <Column field="color" header="Color" filter filterElement={colorFilter} sortable />
+                        <Column header={actionHeader} body={this.actionTemplate} style={{textAlign:'center', width: '8em'}}/>
                     </DataTable>
-
-                    <h3>Dynamic Columns</h3>
-                    <DataTable value={this.state.cars}>
-                        {dynamicColumns}
-                    </DataTable>
-
                 </div>
-
-                <DataTableDoc></DataTableDoc>
             </div>
         );
     }

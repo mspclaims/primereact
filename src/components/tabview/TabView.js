@@ -36,6 +36,7 @@ export class TabView extends Component {
         activeIndex: 0,
         style: null,
         className: null,
+        renderActiveOnly: true,
         onTabChange: null
     }
 
@@ -44,6 +45,7 @@ export class TabView extends Component {
         activeIndex: PropTypes.number,
         style: PropTypes.object,
         className: PropTypes.string,
+        renderActiveOnly: PropTypes.bool,
         onTabChange: PropTypes.func
     };
     
@@ -81,7 +83,7 @@ export class TabView extends Component {
              
     renderTabHeader(tab, index) {
         const selected = this.isSelected(index);
-        const className = classNames(tab.props.headerClassName, {'p-tabview-selected p-highlight': selected, 'p-disabled': tab.props.disabled});
+        const className = classNames(tab.props.headerClassName, 'p-unselectable-text', {'p-tabview-selected p-highlight': selected, 'p-disabled': tab.props.disabled});
         const id = this.id + '_header_' + index;
         const ariaControls = this.id + '_content_' + index;
 
@@ -116,21 +118,28 @@ export class TabView extends Component {
     
     renderContent() {
         const contents = React.Children.map(this.props.children, (tab, index) => {
-            const selected = this.isSelected(index);
-            const className = classNames(tab.props.contentClassName, 'p-tabview-panel', {'p-hidden': !selected});
-            const id = this.id + '_content_' + index;
-            const ariaLabelledBy = this.id + '_header_' + index;
-
-            return (
-                <div id={id} aria-labelledby={ariaLabelledBy} aria-hidden={!selected} className={className} style={tab.props.contentStyle} role="tabpanel">
-                    {selected && tab.props.children}
-                </div>
-            );
+            if (!this.props.renderActiveOnly || this.isSelected(index)) {
+                return this.createContent(tab,index);
+            }
         })
-        
+
         return (
             <div className="p-tabview-panels">
                 {contents}
+            </div>
+        );
+    }
+
+    createContent(tab, index) {
+        const selected = this.isSelected(index);
+        const className = classNames(tab.props.contentClassName, 'p-tabview-panel', {'p-hidden': !selected});
+        const id = this.id + '_content_' + index;
+        const ariaLabelledBy = this.id + '_header_' + index;
+
+        return (
+            <div id={id} aria-labelledby={ariaLabelledBy} aria-hidden={!selected} className={className}
+                 style={tab.props.contentStyle} role="tabpanel">
+                {!this.props.renderActiveOnly ? tab.props.children : (selected && tab.props.children)}
             </div>
         );
     }

@@ -1,12 +1,22 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://badge.fury.io/js/primereact.svg)](https://badge.fury.io/js/primereact)
 [![Join the chat at https://gitter.im/primefaces/primereact](https://badges.gitter.im/primefaces/primereact.svg)](https://gitter.im/primefaces/primereact?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 
 # PrimeReact
 
 PrimeReact is a rich set of open source UI Components for React.
 
-![alt text](https://www.primefaces.org/wp-content/uploads/2017/09/primereact-transparent-250.png "PrimeReact")
+[![PrimeReact Logo](https://www.primefaces.org/wp-content/uploads/2017/09/primereact-transparent-250.png "PrimeReact")](https://www.primefaces.org/primereact)
 
 See [PrimeReact homepage](https://www.primefaces.org/primereact) for live showcase and documentation.
+
+
+<p align="center">
+  <a href="https://bitsrc.io/primefaces/primereact"><img src="https://i.imagesup.co/images2/0__05c8234cb5e0df.jpg"></a>
+</p>
+
+[Components demo](https://bitsrc.io/primefaces/primereact)
 
 ## Download
 
@@ -37,7 +47,7 @@ dependencies: {
     "react-dom": "^16.0.0",
     "react-transition-group": "^2.2.1",
     "classnames": "^2.2.5",
-    "primeicons": "^1.0.0-beta.10"
+    "primeicons": "^2.0.0"
 }
 ```
 

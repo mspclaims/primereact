@@ -23,15 +23,18 @@ export class PickList extends Component {
         showSourceControls: true,
         showTargetControls: true,
         metaKeySelection: true,
+        tabIndex: '0',
         itemTemplate: null,
         onChange: null,
         onMoveToSource: null,
         onMoveAllToSource: null,
         onMoveToTarget: null,
-        onMoveAllToTarget: null
+        onMoveAllToTarget: null,
+        onSourceSelect: null,
+        onTargetSelect: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         id: PropTypes.string,
         source: PropTypes.array,
         target: PropTypes.array,
@@ -45,12 +48,15 @@ export class PickList extends Component {
         showSourceControls: PropTypes.bool,
         showTargetControls: PropTypes.bool,
         metaKeySelection: PropTypes.bool,
+        tabIndex: PropTypes.string,
         itemTemplate: PropTypes.func,
         onChange: PropTypes.func,
         onMoveToSource: PropTypes.func,
         onMoveAllToSource: PropTypes.func,
         onMoveToTarget: PropTypes.func,
         onMoveAllToTarget: PropTypes.func,
+        onSourceSelect: PropTypes.func,
+        onTargetSelect: PropTypes.func
     }
 
     constructor(props) {
@@ -116,7 +122,7 @@ export class PickList extends Component {
                 if(this.props.onMoveToTarget) {
                     this.props.onMoveToTarget({
                         originalEvent: event.originalEvent,
-                        value: this.props.selectedItemsSource
+                        value: this.state.selectedItemsSource
                     })
                 }
             break;
@@ -134,7 +140,7 @@ export class PickList extends Component {
                 if(this.props.onMoveToSource) {
                     this.props.onMoveToSource({
                         originalEvent: event.originalEvent,
-                        value: this.props.selectedItemsTarget
+                        value: this.state.selectedItemsTarget
                     })
                 }
             break;
@@ -171,6 +177,14 @@ export class PickList extends Component {
             
         DomHandler.scrollInView(listContainer, listItem);
     }
+
+    onSelectionChange(e, stateKey, callback) {
+        this.setState({[stateKey]: e.value});
+
+        if (callback) {
+            callback(e);
+        }
+    }
     
     componentDidUpdate() {
         if(this.reorderedListElement) {
@@ -190,14 +204,14 @@ export class PickList extends Component {
                 {this.props.showSourceControls && <PickListControls list={this.props.source} selection={this.state.selectedItemsSource} 
                             onReorder={this.onSourceReorder} className="p-picklist-source-controls" />}
                 
-                <PickListSubList ref={(el) => this.sourceListElement = ReactDOM.findDOMNode(el)} list={this.props.source} selection={this.state.selectedItemsSource} onSelectionChange={(e) => this.setState({selectedItemsSource: e.value})} itemTemplate={this.props.itemTemplate} 
-                    header={this.props.sourceHeader} style={this.props.sourceStyle} className="p-picklist-source-wrapper" listClassName="p-picklist-source" metaKeySelection={this.props.metaKeySelection} />
+                <PickListSubList ref={(el) => this.sourceListElement = ReactDOM.findDOMNode(el)} list={this.props.source} selection={this.state.selectedItemsSource} onSelectionChange={(e) => this.onSelectionChange(e, 'selectedItemsSource', this.props.onSourceSelect)} itemTemplate={this.props.itemTemplate} 
+                    header={this.props.sourceHeader} style={this.props.sourceStyle} className="p-picklist-source-wrapper" listClassName="p-picklist-source" metaKeySelection={this.props.metaKeySelection} tabIndex={this.props.tabIndex}/>
                 
                 <PickListTransferControls onTransfer={this.onTransfer} source={this.props.source} target={this.props.target} 
                     sourceSelection={this.state.selectedItemsSource} targetSelection={this.state.selectedItemsTarget} />
                 
-                <PickListSubList ref={(el) => this.targetListElement = ReactDOM.findDOMNode(el)} list={this.props.target} selection={this.state.selectedItemsTarget} onSelectionChange={(e) => this.setState({selectedItemsTarget: e.value})}  itemTemplate={this.props.itemTemplate} 
-                    header={this.props.targetHeader} style={this.props.targetStyle} className="p-picklist-target-wrapper" listClassName="p-picklist-targe" metaKeySelection={this.props.metaKeySelection}/>
+                <PickListSubList ref={(el) => this.targetListElement = ReactDOM.findDOMNode(el)} list={this.props.target} selection={this.state.selectedItemsTarget} onSelectionChange={(e) => this.onSelectionChange(e, 'selectedItemsTarget', this.props.onTargetSelect)}  itemTemplate={this.props.itemTemplate} 
+                    header={this.props.targetHeader} style={this.props.targetStyle} className="p-picklist-target-wrapper" listClassName="p-picklist-targe" metaKeySelection={this.props.metaKeySelection} tabIndex={this.props.tabIndex}/>
                 
                 {this.props.showTargetControls && <PickListControls list={this.props.target} selection={this.state.selectedItemsTarget} 
                             onReorder={this.onTargetReorder} className="p-picklist-target-controls" />}

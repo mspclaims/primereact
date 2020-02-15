@@ -9,6 +9,7 @@ export class Column extends Component {
         sortField: null,
         header: null,
         body: null,
+        loadingBody: null,
         footer: null,
         sortable: false,
         sortFunction: null,
@@ -34,16 +35,23 @@ export class Column extends Component {
         rowSpan: null,
         editor: null,
         editorValidator: null,
+        editorValidatorEvent: 'click',
+        onEditorSubmit: null,
+        onEditorCancel: null,
+        excludeGlobalFilter: false,
         rowReorder: false,
-        rowReorderIcon: 'pi pi-bars'
+        rowReorderIcon: 'pi pi-bars',
+        rowEditor: false,
+        exportable: true
     }
 
-    static propsTypes = {
+    static propTypes = {
         columnKey: PropTypes.string,
         field: PropTypes.string,
         sortField: PropTypes.string,
         header: PropTypes.any,
         body: PropTypes.any,
+        loadingBody: PropTypes.func,
         footer: PropTypes.any,
         sortable: PropTypes.any,
         sortFunction: PropTypes.func,
@@ -69,7 +77,13 @@ export class Column extends Component {
         rowSpan: PropTypes.number,
         editor: PropTypes.func,
         editorValidator: PropTypes.func,
+        onEditorSubmit: PropTypes.func,
+        onEditorCancel: PropTypes.func,
+        editorValidatorEvent: PropTypes.string,
+        excludeGlobalFilter: PropTypes.bool,
         rowReorder: PropTypes.bool,
-        rowReorderIcon: PropTypes.string
+        rowReorderIcon: PropTypes.string,
+        rowEditor: PropTypes.bool,
+        exportable: PropTypes.bool
     }
 }

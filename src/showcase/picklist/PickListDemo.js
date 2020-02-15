@@ -4,13 +4,14 @@ import {PickList} from '../../components/picklist/PickList';
 import {CarService} from '../service/CarService';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 
 export class PickListDemo extends Component {
 
     constructor() {
         super();
         this.state = {
-            source: [], 
+            source: [],
             target: []
         };
         this.carservice = new CarService();
@@ -21,7 +22,7 @@ export class PickListDemo extends Component {
     componentDidMount() {
         this.carservice.getCarsSmall().then(data => this.setState({source: data}));
     }
-    
+
     onChange(event) {
         this.setState({
             source: event.source,
@@ -31,7 +32,7 @@ export class PickListDemo extends Component {
 
     carTemplate(car) {
         var imageSource = 'showcase/resources/demo/images/car/' + car.brand + '.png';
-        
+
         return (
             <div className="p-clearfix">
                 <img src={imageSource} alt={car.brand} style={{display: 'inline-block', margin: '2px 0 2px 2px',width:48}} />
@@ -46,13 +47,17 @@ export class PickListDemo extends Component {
                 <div className="content-section introduction">
                     <div className="feature-intro">
                         <h1>PickList</h1>
-                        <p>PickList is used to reorder items between differents lists.</p>
+                        <p>PickList is used to reorder items between different lists.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("pickList")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
                 <div className="content-section implementation">
-                    <PickList source={this.state.source} target={this.state.target} itemTemplate={this.carTemplate} 
-                        sourceHeader="Available" targetHeader="Selected" responsive={true} 
+                    <PickList source={this.state.source} target={this.state.target} itemTemplate={this.carTemplate}
+                        sourceHeader="Available" targetHeader="Selected" responsive={true}
                         sourceStyle={{height: '300px'}} targetStyle={{height: '300px'}}
                         onChange={this.onChange}></PickList>
                 </div>
@@ -68,7 +73,7 @@ export class PickListDoc extends Component {
     shouldComponentUpdate(){
         return false;
     }
-    
+
     render() {
         return (
             <div className="content-section documentation">
@@ -86,7 +91,7 @@ import {PickList} from 'primereact/picklist';
             <p>PickList requires two arrays as <i>source</i> and <i>target</i> lists, an <i>itemTemplate</i> for the item content and <i>onChange</i> callback to update the value after reorder or transfer.</p>
 <CodeHighlight className="language-jsx">
 {`
-<PickList source={this.state.cars} target={this.state.targetCars} itemTemplate={this.carTemplate} 
+<PickList source={this.state.cars} target={this.state.targetCars} itemTemplate={this.carTemplate}
     onChange={(e) => this.setState({source: e.source, target: e.target})} />
 
 `}
@@ -96,7 +101,7 @@ import {PickList} from 'primereact/picklist';
             <p>In responsive mode, picklist adjusts its controls based on screen size. To activate this mode, set responsive as true.</p>
 <CodeHighlight className="language-jsx">
 {`
-<PickList source={this.state.cars} target={this.state.targetCars} itemTemplate={this.carTemplate} 
+<PickList source={this.state.cars} target={this.state.targetCars} itemTemplate={this.carTemplate}
     onChange={(e) => this.setState({source: e.source, target: e.target})} responsive={true} />
 
 `}
@@ -104,10 +109,10 @@ import {PickList} from 'primereact/picklist';
 
             <h3>Headers</h3>
             <p><i>sourceHeader</i> and <i>targetHeader</i> properties are used to define captions for the lists that accept simple strings or JSX for custom content.</p>
-            
+
 <CodeHighlight className="language-jsx">
 {`
-<PickList source={this.state.cars} target={this.state.targetCars} itemTemplate={this.carTemplate} 
+<PickList source={this.state.cars} target={this.state.targetCars} itemTemplate={this.carTemplate}
     onChange={(e) => this.setState({source: e.source, target: e.target})} sourceHeader="Available" targetHeader="Seleced"/>
 
 `}
@@ -210,6 +215,12 @@ import {PickList} from 'primereact/picklist';
                             <td>Defines how multiple items can be selected, when true metaKey needs to be pressed to select or unselect an item and when set to false selection of each item
                             can be toggled individually. On touch enabled devices, metaKeySelection is turned off automatically.</td>
                         </tr>
+                        <tr>
+                            <td>tabIndex</td>
+                            <td>string</td>
+                            <td>null</td>
+                            <td>Index of the element in tabbing order.</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -255,6 +266,18 @@ import {PickList} from 'primereact/picklist';
                             <td>event.originalEvent: Browser event <br />
                                 event.value: Moved items</td>
                             <td>Callback to invoke when all items are moved from source to target.</td>
+                        </tr>
+                        <tr>
+                            <td>onSourceSelect</td>
+                            <td>event.originalEvent: Browser event <br />
+                                items: Selected items array</td>
+                            <td>Callback to invoke when items are selected within source list.</td>
+                        </tr>
+                        <tr>
+                            <td>onTargetSelect</td>
+                            <td>event.originalEvent: Browser event <br />
+                                items: Selected items array</td>
+                            <td>Callback to invoke when items are selected within target list.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -305,7 +328,7 @@ import {PickList} from 'primereact/picklist';
                 <h3>Dependencies</h3>
                 <p>None.</p>
             </div>
-            
+
             </TabPanel>
 
             <TabPanel header="Source">
@@ -323,7 +346,7 @@ export class PickListDemo extends Component {
     constructor() {
         super();
         this.state = {
-            source: [], 
+            source: [],
             target: []
         };
         this.carservice = new CarService();
@@ -334,7 +357,7 @@ export class PickListDemo extends Component {
     componentDidMount() {
         this.carservice.getCarsSmall().then(data => this.setState({source: data}));
     }
-    
+
     onChange(event) {
         this.setState({
             source: event.source,
@@ -344,7 +367,7 @@ export class PickListDemo extends Component {
 
     carTemplate(car) {
         var imageSource = 'showcase/resources/demo/images/car/' + car.brand + '.png';
-        
+
         return (
             <div className="p-clearfix">
                 <img src={imageSource} alt={car.brand} style={{ display: 'inline-block', margin: '2px 0 2px 2px',width:48 }} />
@@ -364,8 +387,8 @@ export class PickListDemo extends Component {
                 </div>
 
                 <div className="content-section implementation">
-                    <PickList source={this.state.source} target={this.state.target} itemTemplate={this.carTemplate} 
-                    sourceHeader="Available" targetHeader="Selected" responsive={true} 
+                    <PickList source={this.state.source} target={this.state.target} itemTemplate={this.carTemplate}
+                    sourceHeader="Available" targetHeader="Selected" responsive={true}
                     sourceStyle={{height: '300px'}} targetStyle={{height: '300px'}}
                     onChange={this.onChange}></PickList>
                 </div>

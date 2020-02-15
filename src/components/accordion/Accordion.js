@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import DomHandler from '../utils/DomHandler';
 import UniqueComponentId from '../utils/UniqueComponentId';
+import { CSSTransition } from 'react-transition-group';
 
 export class AccordionTab extends Component {
-    
+
     static defaultProps = {
         header: null,
         disabled: false,
@@ -14,9 +14,9 @@ export class AccordionTab extends Component {
         contentStyle: null,
         contentClassName: null
     }
-    
+
     static propTypes = {
-        header: PropTypes.string,
+        header: PropTypes.any,
         disabled: PropTypes.bool,
         headerStyle: PropTypes.object,
         headerClassName: PropTypes.string,
@@ -48,7 +48,7 @@ export class Accordion extends Component {
         onTabClose: PropTypes.func,
         onTabChange: PropTypes.func
     };
-    
+
     constructor(props) {
         super(props);
         if (!this.props.onTabChange) {
@@ -56,26 +56,14 @@ export class Accordion extends Component {
                 activeIndex: props.activeIndex
             };
         }
-        
+
         this.contentWrappers = [];
         this.id = this.props.id || UniqueComponentId();
     }
 
-    componentDidUpdate() {
-        if (this.togglingTabIndex != null && this.togglingTabIndex >= 0) {
-            const expandingTabContent = this.container.children[this.togglingTabIndex].children[1];
-            DomHandler.addClass(expandingTabContent, 'p-accordion-content-wrapper-expanding');
-            setTimeout(() => {
-                DomHandler.removeClass(expandingTabContent, 'p-accordion-content-wrapper-expanding');
-                this.togglingTabIndex = null;
-            }, 500);
-        }
-    }
-    
     onTabHeaderClick(event, tab, index) {
         if (!tab.props.disabled) {
             const selected = this.isSelected(index);
-            this.togglingTabIndex = selected ? null : index;
             let newActiveIndex = null;
 
             if(this.props.multiple) {
@@ -115,39 +103,40 @@ export class Accordion extends Component {
     isSelected(index) {
         const activeIndex = this.props.onTabChange ? this.props.activeIndex : this.state.activeIndex;
 
-        return this.props.multiple ? (activeIndex && activeIndex.indexOf(index) >= 0) : activeIndex === index;        
+        return this.props.multiple ? (activeIndex && activeIndex.indexOf(index) >= 0) : activeIndex === index;
     }
-    
+
     renderTabHeader(tab, selected, index) {
         const tabHeaderClass = classNames(tab.props.headerClassName, 'p-accordion-header', {'p-highlight': selected, 'p-disabled': tab.props.disabled});
         const id = this.id + '_header_' + index;
         const ariaControls = this.id + '_content_' + index;
+        const tabIndex = tab.props.disabled ? -1 : null;
 
         return (
             <div className={tabHeaderClass} style={tab.props.headerStyle}>
-                <a href={'#' + ariaControls} id={id} aria-controls={ariaControls} role="tab" aria-expanded={selected} onClick={(event) => this.onTabHeaderClick(event, tab, index)}>
+                <a href={'#' + ariaControls} id={id} aria-controls={ariaControls} role="tab" aria-expanded={selected} onClick={(event) => this.onTabHeaderClick(event, tab, index)} tabIndex={tabIndex}>
                     <span className={classNames('p-accordion-toggle-icon pi pi-fw', { 'pi-caret-right': !selected, 'pi-caret-down': selected })}></span>
                     <span className="p-accordion-header-text">{tab.props.header}</span>
                 </a>
             </div>
         );
     }
-    
+
     renderTabContent(tab, selected, index) {
-        const tabContentWrapperClass = classNames(tab.props.contentClassName, 'p-accordion-content-wrapper',{
-                                    'p-accordion-content-wrapper-collapsed': !selected,
-                                    'p-accordion-content-wrapper-expanded': selected});
+        const className = classNames(tab.props.contentClassName, 'p-toggleable-content', {'p-toggleable-content-collapsed': !selected});
         const id = this.id + '_content_' + index;
 
         return (
-            <div id={id} className={tabContentWrapperClass} style={tab.props.contentStyle}>
-                <div className="p-accordion-content">
-                    {tab.props.children}
+            <CSSTransition classNames="p-toggleable-content" timeout={{enter: 400, exit: 250}} in={selected}>
+                <div id={id} className={className} style={tab.props.contentStyle} role="region" aria-labelledby={this.id + '_header_' +index}>
+                    <div className="p-accordion-content">
+                        {tab.props.children}
+                    </div>
                 </div>
-            </div>
+            </CSSTransition>
         );
-    } 
-    
+    }
+
     renderTab(tab, index) {
         const selected = this.isSelected(index);
         const tabHeader = this.renderTabHeader(tab, selected, index);
@@ -168,7 +157,7 @@ export class Accordion extends Component {
             })
         )
     }
-         
+
     render() {
         const className = classNames('p-accordion p-component p-reset', this.props.className);
         const tabs = this.renderTabs();

@@ -13,11 +13,13 @@ interface PaginatorProps {
     first?: number;
     pageLinkSize?: number;
     rowsPerPageOptions?: any[];
+    alwaysShow?: boolean;
     style?: object;
     className?: string;
     template?: string;
     leftContent?: JSX.Element | undefined;
     rightContent?: JSX.Element | undefined;
+    currentPageReportTemplate?: string;
     onPageChange?(event: PageState): void;
 }
 

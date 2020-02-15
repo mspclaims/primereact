@@ -77,6 +77,32 @@
     margin-left: 1px;
 }
 
+.p-tree .p-tree-filter {
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 1.5em;
+}
+
+.p-tree .p-tree-filter-container {
+    position: relative;
+    margin: 0;
+    padding: 0.4em;
+    display: inline-block;
+    width: 100%;
+}
+
+.p-tree .p-tree-filter-container .p-tree-filter-icon {
+    position: absolute;
+    top: .8em;
+    right: 1em;
+}
+
+.p-tree.p-disabled .p-treenode-selectable.p-treenode-content,
+.p-tree.p-disabled .p-tree-toggler,
+.p-tree.p-disabled .p-checkbox-box {
+    cursor: default;
+}
+
 /** Fluid **/
 .p-fluid .p-tree {
     width: 100%;

@@ -15,6 +15,7 @@ export class TriStateCheckbox extends Component {
         className: null,
         tooltip: null,
         tooltipOptions: null,
+        ariaLabelledBy: null,
         onChange: null
     };
 
@@ -27,9 +28,10 @@ export class TriStateCheckbox extends Component {
         className: PropTypes.string,
         tooltip: PropTypes.string,
         tooltipOptions: PropTypes.object,
+        ariaLabelledBy: PropTypes.string,
         onChange: PropTypes.func
     }
-    
+
     constructor(props) {
         super(props);
         this.onClick = this.onClick.bind(this);
@@ -50,11 +52,18 @@ export class TriStateCheckbox extends Component {
             newValue = false;
         else if(this.props.value === false)
             newValue = null;
-            
+
         if(this.props.onChange) {
             this.props.onChange({
                 originalEvent: event,
-                value: newValue
+                value: newValue,
+                stopPropagation : () =>{},
+                preventDefault : () =>{},
+                target: {
+                    name: this.props.name,
+                    id: this.props.id,
+                    value:  newValue,
+                }
             })
         }
     }
@@ -69,11 +78,16 @@ export class TriStateCheckbox extends Component {
 
     componentDidMount() {
         if (this.props.tooltip) {
-            this.tooltip = new Tooltip({
-                target: this.element,
-                content: this.props.tooltip,
-                options: this.props.tooltipOptions
-            });
+            this.renderTooltip();
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.tooltip !== this.props.tooltip) {
+            if (this.tooltip)
+                this.tooltip.updateContent(this.props.tooltip);
+            else
+                this.renderTooltip();
         }
     }
 
@@ -84,6 +98,14 @@ export class TriStateCheckbox extends Component {
         }
     }
 
+    renderTooltip() {
+        this.tooltip = new Tooltip({
+            target: this.element,
+            content: this.props.tooltip,
+            options: this.props.tooltipOptions
+        });
+    }
+
     render() {
         let containerClass = classNames('p-checkbox p-tristatecheckbox p-component', this.props.className);
         let boxClass = classNames('p-checkbox-box p-component', {'p-highlight':(this.props.value || !this.props.value) && this.props.value !== null});
@@ -92,9 +114,10 @@ export class TriStateCheckbox extends Component {
         return (
             <div ref={(el) => this.element = el} id={this.props.id} className={containerClass} style={this.props.style} onClick={this.onClick}>
                 <div className="p-hidden-accessible">
-                    <input ref={(el) => this.inputEL = el} type="checkbox" id={this.props.inputId} name={this.props.name} onFocus={this.onFocus} onBlur={this.onBlur}/>
+                    <input ref={(el) => this.inputEL = el} type="checkbox" aria-labelledby={this.props.ariaLabelledBy} id={this.props.inputId} name={this.props.name}
+                           onFocus={this.onFocus} onBlur={this.onBlur}/>
                 </div>
-                <div className={boxClass} ref={(el) => { this.box = el; }}>
+                <div className={boxClass} ref={(el) => { this.box = el; }} role="checkbox" aria-checked={this.props.value === true}>
                     <span className={iconClass}></span>
                 </div>
             </div>

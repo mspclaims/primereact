@@ -3,6 +3,7 @@ import TooltipOptions from '../tooltip/TooltipOptions';
 
 interface DropdownProps {
     id?: string;
+    name?: string;
     value?: any;
     options?: any[];
     optionLabel?: string;
@@ -20,14 +21,18 @@ interface DropdownProps {
     appendTo?: any;
     tabIndex?: number;
     autoFocus?: boolean;
+    filterInputAutoFocus?: boolean;
     lazy?: boolean;
     panelClassName?: string;
     panelStyle?: object;
     dataKey?: string;
     inputId?: string;
     showClear?: boolean;
+    maxLength?: number;
     tooltip?: any;
     tooltipOptions?: TooltipOptions;
+    ariaLabel?: string,
+    ariaLabelledBy?: string,
     itemTemplate?(option:any): React.ReactNode;
     onChange?(e: {originalEvent: Event, value: any}): void;
     onMouseDown?(event: Event): void;

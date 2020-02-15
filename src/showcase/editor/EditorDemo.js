@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 import {Editor} from "../../components/editor/Editor";
 import {Button} from "../../components/button/Button";
 
@@ -34,6 +35,10 @@ export class EditorDemo extends Component {
                     <div className="feature-intro">
                         <h1>Editor</h1>
                         <p>Editor is rich text editor component based on Quill.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("editor")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
@@ -99,7 +104,7 @@ const header = (
         <button className="ql-underline" aria-label="Underline"></button>
     </span>
 );
-    
+
 <Editor style={{height:'320px'}} value={this.state.text} onTextChange={(e) => this.setState({text: e.htmlValue})} headerTemplate={header}/>
 
 `}
@@ -148,10 +153,16 @@ const header = (
                                         <td>Placeholder text to show when editor is empty.</td>
                                     </tr>
                                     <tr>
-                                        <td>readonly</td>
+                                        <td>readOnly</td>
                                         <td>boolean</td>
                                         <td>false</td>
                                         <td>Whether to instantiate the editor to read-only mode.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>modules</td>
+                                        <td>object</td>
+                                        <td>null</td>
+                                        <td>Modules configuration, see <a href="http://quilljs.com/docs/modules/">here</a> for available options.</td>
                                     </tr>
                                     <tr>
                                         <td>formats</td>
@@ -191,7 +202,7 @@ const header = (
                                 <tr>
                                     <td>onSelectionChange</td>
                                     <td>event.range: Object with index and length keys indicating where the selection exists.<br/>
-                                        event.oldRange: Object with index and length keys indicating where the previous selection was..<br/>
+                                        event.oldRange: Object with index and length keys indicating where the previous selection was.<br/>
                                         event.source: Source of change. Will be either "user" or "api".</td>
                                     <td>Callback to invoke when selected text of editor changes.</td>
                                 </tr>

@@ -53,6 +53,7 @@ interface CalendarProps {
     stepSecond?: number;
     shortYearCutoff?: string;
     hideOnDateTimeSelect?: boolean;
+    showWeek?: boolean;
     locale?: LocaleSettings;
     dateFormat?: string;
     panelStyle?: object;
@@ -74,8 +75,11 @@ interface CalendarProps {
     appendTo?: any;
     tooltip?: any;
     tooltipOptions?: TooltipOptions;
+    ariaLabelledBy?: string;
     yearRange?: string;
     dateTemplate?(dateMeta:DateMetaData): React.ReactNode;
+    headerTemplate?(): React.ReactNode;
+    footerTemplate?(): React.ReactNode;
     onFocus?(event: Event): void;
     onBlur?(event: Event): void;
     onInput?(event: Event): void;

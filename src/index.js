@@ -1,6 +1,7 @@
+import 'react-app-polyfill/ie9';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
-import 'babel-polyfill';
 import App from './App';
 import ScrollToTop from './showcase/scrolltotop/ScrollToTop';
 import { HashRouter } from 'react-router-dom';

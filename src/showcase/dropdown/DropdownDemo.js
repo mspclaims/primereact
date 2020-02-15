@@ -3,17 +3,18 @@ import {Link} from 'react-router-dom';
 import {Dropdown} from '../../components/dropdown/Dropdown';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 
 export class DropdownDemo extends Component {
 
     constructor() {
         super();
         this.state = {
-            city: null, 
-            car: null, 
+            city: null,
+            car: null,
             car2: 'BMW'
         };
-        
+
         this.onCityChange = this.onCityChange.bind(this);
         this.onCarChange = this.onCarChange.bind(this);
         this.onCarChange2 = this.onCarChange2.bind(this);
@@ -74,21 +75,25 @@ export class DropdownDemo extends Component {
                     <div className="feature-intro">
                         <h1>Dropdown</h1>
                         <p>Dropdown is used to select an item from a collection of options.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("dropdown")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
                 <div className="content-section implementation">
                     <h3>Basic</h3>
-                    <Dropdown value={this.state.city} options={cities} onChange={this.onCityChange} style={{width:'150px'}} placeholder="Select a City" optionLabel="name"/>
+                    <Dropdown value={this.state.city} options={cities} ariaLabel="Test" onChange={this.onCityChange} placeholder="Select a City" optionLabel="name" />
                     <div style={{marginTop: '.5em'}}>{this.state.city ? 'Selected City: ' + this.state.city.name : 'No city selected'}</div>
 
                     <h3>Editable</h3>
                     <Dropdown value={this.state.car} options={cars} onChange={this.onCarChange}
-                              style={{width:'150px'}} editable={true} placeholder="Select a Brand"/>
+                              editable={true} placeholder="Select a Brand" />
                     <div style={{marginTop: '.5em'}}>{this.state.car ? 'Selected Car: ' + this.state.car : 'No car selected'}</div>
 
                     <h3>Advanced</h3>
-                    <Dropdown value={this.state.car2} options={cars} onChange={this.onCarChange2} itemTemplate={this.carTemplate} style={{width:'150px'}}
+                    <Dropdown value={this.state.car2} options={cars} onChange={this.onCarChange2} itemTemplate={this.carTemplate}
                               filter={true} filterPlaceholder="Select Car" filterBy="label,value" showClear={true}/>
                     <div style={{marginTop: '.5em'}}>{this.state.car2 ? 'Selected Car: ' + this.state.car2 : 'No car selected'}</div>
                 </div>
@@ -119,9 +124,9 @@ import {Dropdown} from 'primereact/dropdown';
                         </CodeHighlight>
 
                         <h3>Getting Started</h3>
-                        <p>Dropdown is used as a controlled component with <i>value</i> and <i>onChange</i> properties along with the options collection. There are two alternatives 
+                        <p>Dropdown is used as a controlled component with <i>value</i> and <i>onChange</i> properties along with the options collection. There are two alternatives
                         of how to define the options property; One way is providing a collection of <i>SelectItem</i> instances having label-value pairs
-                        whereas other way is providing an array of arbitrary objects along with the <i>optionLabel</i> property to specify the field name of the option. SelectItem API is designed to have more 
+                        whereas other way is providing an array of arbitrary objects along with the <i>optionLabel</i> property to specify the field name of the option. SelectItem API is designed to have more
                         control on how the options are displayed such as grouping and disabling however in most cases an arbitrary object collection will suffice.</p>
 
                         <p><b>Options as SelectItems</b></p>
@@ -137,14 +142,14 @@ const citySelectItems = [
 
 `}
                         </CodeHighlight>
-                        
+
                         <CodeHighlight className="language-jsx">
                             {`
 <Dropdown value={this.state.city} options={citySelectItems} onChange={(e) => {this.setState({city: e.value})}} placeholder="Select a City"/>
 
 `}
                         </CodeHighlight>
-                        
+
                         <p><b>Options as any type</b></p>
                         <CodeHighlight className="language-javascript">
                             {`
@@ -158,13 +163,16 @@ const cities = [
 
 `}
                         </CodeHighlight>
-                        
+
                         <CodeHighlight className="language-jsx">
                             {`
 <Dropdown optionLabel="name" value={this.state.city} options={cities} onChange={(e) => {this.setState({city: e.value})}} placeholder="Select a City"/>
 
 `}
                         </CodeHighlight>
+
+                        <h3>Placeholder</h3>
+                        <p>Common pattern is providing an empty option as the placeholder when using native selects, however Dropdown has built-in support using the placeholder option so it is suggested to use it instead of creating an empty option.</p>
 
                         <h3>Filtering</h3>
                         <p>Options can be filtered using an input field in the overlay by enabling the <i>filter</i> property. By default filtering is done against
@@ -262,12 +270,6 @@ carTemplate(option) {
                                         <td>Style class of the element.</td>
                                     </tr>
                                     <tr>
-                                        <td>autoWidth</td>
-                                        <td>boolean</td>
-                                        <td>true</td>
-                                        <td>Calculates the width based on options width, set to false for custom width.</td>
-                                    </tr>
-                                    <tr>
                                         <td>scrollHeight</td>
                                         <td>string</td>
                                         <td>200px</td>
@@ -328,6 +330,12 @@ carTemplate(option) {
                                         <td>When present, it specifies that the component should automatically get focus on load.</td>
                                     </tr>
                                     <tr>
+                                        <td>filterInputAutoFocus</td>
+                                        <td>boolean</td>
+                                        <td>true</td>
+                                        <td>When the panel is opened, it specifies that the filter input should focus automatically.</td>
+                                    </tr>
+                                    <tr>
                                         <td>panelClassName</td>
                                         <td>string</td>
                                         <td>null</td>
@@ -358,6 +366,12 @@ carTemplate(option) {
                                         <td>When enabled, a clear icon is displayed to clear the value.</td>
                                     </tr>
                                     <tr>
+                                        <td>maxLength</td>
+                                        <td>number</td>
+                                        <td>null</td>
+                                        <td>Maximum number of characters to be typed on an editable input.</td>
+                                    </tr>
+                                    <tr>
                                         <td>tooltip</td>
                                         <td>any</td>
                                         <td>null</td>
@@ -368,6 +382,18 @@ carTemplate(option) {
                                         <td>object</td>
                                         <td>null</td>
                                         <td>Configuration of the tooltip, refer to the tooltip documentation for more information.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ariaLabel</td>
+                                        <td>string</td>
+                                        <td>false</td>
+                                        <td>Used to define a string that labels the component.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ariaLabelledBy</td>
+                                        <td>string</td>
+                                        <td>null</td>
+                                        <td>Contains the element IDs of labels.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -399,6 +425,26 @@ carTemplate(option) {
                                         <td>onContextMenu</td>
                                         <td>event: Browser event</td>
                                         <td>Callback to invoke on right-click.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h3>Methods</h3>
+                        <div className="doc-tablewrapper">
+                            <table className="doc-table">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Parameters</th>
+                                    <th>Description</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>checkValidity</td>
+                                        <td>-</td>
+                                        <td>Checks whether the element has any constraints and whether it satisfies them and returns a boolean for the result.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -477,11 +523,11 @@ export class DropdownDemo extends Component {
     constructor() {
         super();
         this.state = {
-            city: null, 
-            car: null, 
+            city: null,
+            car: null,
             car2: 'BMW'
         };
-        
+
         this.onCityChange = this.onCityChange.bind(this);
         this.onCarChange = this.onCarChange.bind(this);
         this.onCarChange2 = this.onCarChange2.bind(this);
@@ -547,16 +593,16 @@ export class DropdownDemo extends Component {
 
                 <div className="content-section implementation">
                     <h3>Basic</h3>
-                    <Dropdown value={this.state.city} options={cities} onChange={this.onCityChange} style={{width:'150px'}} placeholder="Select a City" optionLabel="name"/>
+                    <Dropdown value={this.state.city} options={cities} onChange={this.onCityChange} placeholder="Select a City" optionLabel="name"/>
                     <div style={{marginTop: '.5em'}}>{this.state.city ? 'Selected City: ' + this.state.city.name : 'No city selected'}</div>
 
                     <h3>Editable</h3>
                     <Dropdown value={this.state.car} options={cars} onChange={this.onCarChange}
-                              style={{width:'150px'}} editable={true} placeholder="Select a Brand"/>
+                              editable={true} placeholder="Select a Brand"/>
                     <div style={{marginTop: '.5em'}}>{this.state.car ? 'Selected Car: ' + this.state.car : 'No car selected'}</div>
 
                     <h3>Advanced</h3>
-                    <Dropdown value={this.state.car2} options={cars} onChange={this.onCarChange2} itemTemplate={this.carTemplate} style={{width:'150px'}}
+                    <Dropdown value={this.state.car2} options={cars} onChange={this.onCarChange2} itemTemplate={this.carTemplate}
                               filter={true} filterPlaceholder="Select Car" filterBy="label,value" showClear={true}/>
                     <div style={{marginTop: '.5em'}}>{this.state.car2 ? 'Selected Car: ' + this.state.car2 : 'No car selected'}</div>
                 </div>

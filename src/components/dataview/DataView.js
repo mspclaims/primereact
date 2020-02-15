@@ -14,11 +14,11 @@ export class DataViewLayoutOptions extends Component {
         onChange: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         id: PropTypes.string,
         style: PropTypes.object,
         className: PropTypes.string,
-        layout: null,
+        layout: PropTypes.string,
         onChange: PropTypes.func.isRequired
     }
 
@@ -42,14 +42,14 @@ export class DataViewLayoutOptions extends Component {
 
         return (
             <div id={this.props.id} style={this.props.style} className={className}>
-                <a role={"button"} className={buttonListClass} onClick={(event) => this.changeLayout(event, 'list')}>
+                <button type="button" className={buttonListClass} onClick={(event) => this.changeLayout(event, 'list')}>
                     <i className="pi pi-bars p-button-icon-left"></i>
                     <span className="p-button-text p-clickable">p-btn</span>
-                </a>
-                <a role={"button"} className={buttonGridClass} onClick={(event) => this.changeLayout(event, 'grid')}>
+                </button>
+                <button type="button" className={buttonGridClass} onClick={(event) => this.changeLayout(event, 'grid')}>
                     <i className="pi pi-th-large p-button-icon-left"></i>
                     <span className="p-button-text p-clickable">p-btn</span>
-                </a>
+                </button>
             </div>
         );
     }
@@ -63,9 +63,9 @@ class DataViewItem extends Component {
         layout: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         template: PropTypes.func,
-        item: PropTypes.number,
+        item: PropTypes.any,
         layout: PropTypes.string
     }
 
@@ -83,40 +83,52 @@ export class DataView extends Component {
         footer: null,
         value: null,
         layout: 'list',
-        paginator: false,
         rows: null,
         first: 0,
         totalRecords: null,
-        pageLinks: 5,
+        paginator: false,
+        paginatorPosition: 'bottom',
+        alwaysShowPaginator: true,
+        paginatorTemplate: 'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown',
+        paginatorLeft:null,
+        paginatorRight: null,
+        pageLinkSize: 5,
         rowsPerPageOptions: null,
-        paginatorPosition: "bottom",
+        currentPageReportTemplate: '({currentPage} of {totalPages})',
         emptyMessage: 'No records found',
         sortField: null,
         sortOrder: null,
         style: null,
         className: null,
+        lazy: false,
         itemTemplate: null,
         onPage: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         id: PropTypes.string,
-        header: PropTypes.string,
-        footer: PropTypes.string,
+        header: PropTypes.any,
+        footer: PropTypes.any,
         value: PropTypes.array,
         layout: PropTypes.string,
-        paginator: PropTypes.bool,
         rows: PropTypes.number,
         first: PropTypes.number,
         totalRecords: PropTypes.number,
-        pageLinks: PropTypes.number,
-        rowsPerPageOptions: PropTypes.array,
+        paginator: PropTypes.bool,
         paginatorPosition: PropTypes.string,
+        alwaysShowPaginator: PropTypes.bool,
+        paginatorTemplate: PropTypes.string,
+        paginatorLeft: PropTypes.any,
+        paginatorRight: PropTypes.any,
+        pageLinkSize: PropTypes.number,
+        rowsPerPageOptions: PropTypes.array,
+        currentPageReportTemplate: PropTypes.string,
         emptyMessage: PropTypes.string,
         sortField: PropTypes.string,
         sortOrder: PropTypes.number,
         style: PropTypes.object,
         className: PropTypes.string,
+        lazy: PropTypes.bool,
         itemTemplate: PropTypes.func.isRequired,
         onPage: PropTypes.func
     }
@@ -147,7 +159,9 @@ export class DataView extends Component {
         const totalRecords = this.getTotalRecords();
 
         return (
-            <Paginator first={first} rows={rows} className={className} onPageChange={this.onPageChange} totalRecords={totalRecords}/>
+            <Paginator first={first} rows={rows} pageLinkSize={this.props.pageLinkSize} className={className} onPageChange={this.onPageChange} template={this.props.paginatorTemplate}
+                        totalRecords={totalRecords} rowsPerPageOptions={this.props.rowsPerPageOptions} currentPageReportTemplate={this.props.currentPageReportTemplate}
+                        leftContent={this.props.paginatorLeft} rightContent={this.props.paginatorRight} alwaysShow={this.props.alwaysShowPaginator} />
         );
     }
 
@@ -161,7 +175,7 @@ export class DataView extends Component {
         }
         else {
             this.setState({
-                first:event.first, 
+                first:event.first,
                 rows:event.rows
             });
         }
@@ -245,7 +259,7 @@ export class DataView extends Component {
         if (value && value.length) {
             if (this.props.paginator) {
                 const rows = this.props.onPage ? this.props.rows : this.state.rows;
-                const first = this.props.onPage ? this.props.first : this.state.first;
+                const first = this.props.lazy ? 0 : this.props.onPage ? this.props.first : this.state.first;
                 const last = rows + first;
                 let items = [];
 
@@ -282,7 +296,7 @@ export class DataView extends Component {
 
     processData() {
         let data = this.props.value;
-        
+
         if (data && data.length) {
             if (this.props.sortField) {
                 data = this.sort();
@@ -311,5 +325,5 @@ export class DataView extends Component {
             </div>
         );
     }
-    
+
 }

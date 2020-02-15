@@ -11,7 +11,8 @@ export class ProgressBar extends Component {
         unit: '%',
         style: null,
         className: null,
-        mode: 'determinate'
+        mode: 'determinate',
+        displayValueTemplate: null
     }
 
     static propTypes = {
@@ -21,55 +22,53 @@ export class ProgressBar extends Component {
         unit: PropTypes.string,
         style: PropTypes.object,
         className: PropTypes.string,
-        mode: PropTypes.string
+        mode: PropTypes.string,
+        displayValueTemplate: PropTypes.func
     };
 
-    render() {
-        let className = classNames('p-progressbar p-component', this.props.className, {'p-progressbar-determinate': (this.props.mode === 'determinate'), 'p-progressbar-indeterminate': (this.props.mode === 'indeterminate')});
-        if(this.props.showValue) {
-            let labelText = (this.props.value && typeof(this.props.value) === "number") ? this.props.value + this.props.unit : (this.props.value||"");
-            var label = <div className="p-progressbar-label" style={{display: this.props.value ? 'block' : 'none'}}>{labelText}</div>;
-        } 
-
-        let progressbar = null;
-        
-        if(this.props.mode === 'indeterminate') {
-            let container = (<div className="p-progressbar-indeterminate-container">
-                                <div className="p-progressbar-value p-progressbar-value-animate" style={{width: this.props.value + '%', display: 'block'}}></div>
-                            </div>);
-
-            if(typeof(this.props.value) === "string") {
-                progressbar = (<div id={this.props.id} className={className} role="progressbar" aria-label={this.props.value} style={this.props.style}>
-                                    {label}
-                                    {container}                
-                                </div>);
-            }
-            else {
-                progressbar = (<div id={this.props.id} className={className} role="progressbar" aria-valuemin="0" aria-valuenow={this.props.value} aria-valuemax="100" style={this.props.style}>
-                                    {label}
-                                    {container}                
-                                </div>);
-            }
+    renderLabel() {
+        if (this.props.showValue && this.props.value != null) {
+            let label = this.props.displayValueTemplate ? this.props.displayValueTemplate(this.props.value) : this.props.value + this.props.unit;
+            return (
+                <div className="p-progressbar-label">{label}</div>
+            );
         }
         else {
-            let valueText = (<div className="p-progressbar-value p-progressbar-value-animate" style={{width: this.props.value + '%', display: 'block'}}></div>);
-
-            if(typeof(this.props.value) === "string") {
-                    progressbar = (<div id={this.props.id} className={className} role="progressbar" aria-label={this.props.value} style={this.props.style}>
-                                    {valueText}
-                                    {label}
-                                </div>);
-            }
-            else {
-                progressbar = (<div id={this.props.id} className={className} role="progressbar" aria-valuemin="0" aria-valuenow={this.props.value} aria-valuemax="100" style={this.props.style}>
-                                    {valueText}
-                                    {label}
-                                </div>);
-            }
+            return null;
         }
+    }
 
+    renderDeterminate() {
+        let className = classNames('p-progressbar p-component p-progressbar-determinate', this.props.className);
+        let label = this.renderLabel();
 
-        return progressbar;
+        return (
+            <div  role="progressbar" id={this.props.id} className={className} style={this.props.style} aria-valuemin="0" aria-valuenow={this.props.value} aria-valuemax="100" aria-label={this.props.value}>
+                <div className="p-progressbar-value p-progressbar-value-animate" style={{width: this.props.value + '%', display: 'block'}}></div>
+                {label}
+            </div>
+        );
+    }
+
+    renderIndeterminate() {
+        let className = classNames('p-progressbar p-component p-progressbar-indeterminate', this.props.className);
+
+        return (
+            <div role="progressbar" id={this.props.id} className={className} style={this.props.style}>
+                <div className="p-progressbar-indeterminate-container">
+                    <div className="p-progressbar-value p-progressbar-value-animate"></div>
+                </div>
+            </div>
+        )
+    }
+
+    render() {
+        if (this.props.mode === 'determinate')
+            return this.renderDeterminate();
+        else if (this.props.mode === 'indeterminate')
+            return this.renderIndeterminate();
+        else
+            throw new Error(this.props.mode + " is not a valid mode for the ProgressBar. Valid values are 'determinate' and 'indeterminate'");
     }
 
 }

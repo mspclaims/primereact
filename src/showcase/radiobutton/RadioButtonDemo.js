@@ -3,9 +3,10 @@ import {Link} from 'react-router-dom';
 import {RadioButton} from '../../components/radiobutton/RadioButton';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 
 export class RadioButtonDemo extends Component {
-        
+
     constructor() {
         super();
         this.state = {
@@ -20,6 +21,10 @@ export class RadioButtonDemo extends Component {
                     <div className="feature-intro">
                         <h1>RadioButton</h1>
                         <p>RadioButton is an extension to standard radio button element with skinning capabilities.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("radioButton")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
@@ -137,6 +142,12 @@ import {RadioButton} from 'primereact/radiobutton';
                                     <td>When present, it specifies that the element value cannot be altered.</td>
                                 </tr>
                                 <tr>
+                                    <td>required</td>
+                                    <td>boolean</td>
+                                    <td>false</td>
+                                    <td>When present, it specifies that an input field must be filled out before submitting the form.</td>
+                                </tr>
+                                <tr>
                                     <td>tooltip</td>
                                     <td>any</td>
                                     <td>null</td>
@@ -147,6 +158,12 @@ import {RadioButton} from 'primereact/radiobutton';
                                     <td>object</td>
                                     <td>null</td>
                                     <td>Configuration of the tooltip, refer to the tooltip documentation for more information.</td>
+                                </tr>
+                                <tr>
+                                    <td>ariaLabelledBy</td>
+                                    <td>string</td>
+                                    <td>null</td>
+                                    <td>Establishes relationships between the component and label(s) where its value should be one or more element IDs.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -218,7 +235,7 @@ import React, {Component} from 'react';
 import {RadioButton} from 'primereact/radiobutton';
 
 export class RadioButtonDemo extends Component {
-        
+
     constructor() {
         super();
         this.state = {

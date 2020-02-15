@@ -4,21 +4,22 @@ import {Dialog} from '../../components/dialog/Dialog';
 import {Button} from '../../components/button/Button';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 
 export class DialogDemo extends Component {
-        
+
     constructor() {
         super();
         this.state = {visible: false};
-        this.show = this.show.bind(this);
+        this.onClick = this.onClick.bind(this);
         this.onHide = this.onHide.bind(this);
     }
 
-    show(event) {
+    onClick() {
         this.setState({visible: true});
     }
 
-    onHide(event) {
+    onHide() {
         this.setState({visible: false});
     }
 
@@ -36,18 +37,22 @@ export class DialogDemo extends Component {
                     <div className="feature-intro">
                         <h1>Dialog</h1>
                         <p>Dialog is a container to display content in an overlay window.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("dialog")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
-                <div className="content-section implementation">
-                    <Dialog header="Godfather I" visible={this.state.visible} width="350px" modal={true} footer={footer} minY={70} onHide={this.onHide} maximizable={true} blockScroll={true}>
-                        The story begins as Don Vito Corleone, the head of a New York Mafia family, oversees his daughter's wedding. 
-                        His beloved son Michael has just come home from the war, but does not intend to become part of his father's business. 
-                        Through Michael's life the nature of the family business becomes clear. The business of the family is just like the head of the family, 
-                        kind and benevolent to those who give respect, but given to ruthless violence whenever anything stands against the good of the family.
+                <div className="content-section implementation dialog-demo">
+                    <Dialog header="Godfather I" visible={this.state.visible} style={{width: '50vw'}} modal={true} blockScroll={true} footer={footer} onHide={this.onHide} maximizable>
+                        <p>The story begins as Don Vito Corleone, the head of a New York Mafia family, oversees his daughter's wedding.
+                        His beloved son Michael has just come home from the war, but does not intend to become part of his father's business.
+                        Through Michael's life the nature of the family business becomes clear. The business of the family is just like the head of the family,
+                        kind and benevolent to those who give respect, but given to ruthless violence whenever anything stands against the good of the family.</p>
                     </Dialog>
 
-                    <Button label="Show" icon="pi pi-external-link" onClick={this.show} />
+                    <Button label="Show" icon="pi pi-external-link" onClick={this.onClick} />
                 </div>
 
                 <DialogDoc></DialogDoc>
@@ -61,7 +66,7 @@ export class DialogDoc extends Component {
     shouldComponentUpdate(){
         return false;
     }
-    
+
     render() {
         return (
             <div className="content-section documentation">
@@ -79,10 +84,10 @@ import {Dialog} from 'primereact/dialog';
             <p>Dialog is used as a container and visibility is managed with <i>visible</i> property where <i>onHide</i> event is required to update the visibility state.</p>
 <CodeHighlight className="language-jsx">
 {`
-<Dialog header="Godfather I" visible={this.state.visible} width="350px" modal={true} onHide={(e) => this.setState({visible: false})}>
-    The story begins as Don Vito Corleone, the head of a New York Mafia family, oversees his daughter's wedding. 
-    His beloved son Michael has just come home from the war, but does not intend to become part of his father's business. 
-    Through Michael's life the nature of the family business becomes clear. The business of the family is just like the head of the family, 
+<Dialog header="Godfather I" visible={this.state.visible} style={{width: '50vw'}} modal={true} onHide={() => this.setState({visible: false})}>
+    The story begins as Don Vito Corleone, the head of a New York Mafia family, oversees his daughter's wedding.
+    His beloved son Michael has just come home from the war, but does not intend to become part of his father's business.
+    Through Michael's life the nature of the family business becomes clear. The business of the family is just like the head of the family,
     kind and benevolent to those who give respect, but given to ruthless violence whenever anything stands against the good of the family.
 </Dialog>
 
@@ -92,7 +97,8 @@ import {Dialog} from 'primereact/dialog';
 </CodeHighlight>
 
             <h3>Header and Footer</h3>
-            <p>Header and Footer sections are defined using properties with the same name that accept simple strings or JSX for custom content.</p>
+            <p>Header and Footer sections are defined using properties with the same name that accept simple strings or JSX for custom content. In addition <i>iconsTemplate</i> property enables
+            adding more icons at the header section.</p>
 <CodeHighlight className="language-jsx">
 {`
 const footer = (
@@ -102,7 +108,13 @@ const footer = (
     </div>
 );
 
-<Dialog header="Header Text" footer={footer} visible={this.state.visible} width="350px" modal={true} onHide={this.onHide}>
+const myIcon = (
+    <button className="p-dialog-titlebar-icon p-link">
+        <span className="pi pi-search"></span>
+    </button>
+)
+
+<Dialog header="Header Text" footer={footer} iconsTemplate={myIcon} visible={this.state.visible} style={{width: '50vw'}} modal={true} onHide={this.onHide}>
     Content
 </Dialog>
 
@@ -110,7 +122,7 @@ const footer = (
 </CodeHighlight>
 
             <h3>Dynamic Content</h3>
-            <p>Dynamic content may move the dialog boundaries outside of the viewport. Common solution is defining max-height via contentStyle so longer content displays a scrollbar.</p>
+            <p>Dynamic content may move the dialog boundaries outside of the viewport. Common solution is defining max-height via <i>contentStyle</i> so longer content displays a scrollbar.</p>
 
             <h3>Properties</h3>
             <div className="doc-tablewrapper">
@@ -149,46 +161,10 @@ const footer = (
                             <td>Specifies the visibility of the dialog.</td>
                         </tr>
                         <tr>
-                            <td>width</td>
-                            <td>string</td>
-                            <td>auto</td>
-                            <td>Width of the dialog.</td>
-                        </tr>
-                        <tr>
-                            <td>height</td>
-                            <td>string</td>
-                            <td>auto</td>
-                            <td>Height of the dialog.</td>
-                        </tr>
-                        <tr>
                             <td>modal</td>
                             <td>boolean</td>
-                            <td>false</td>
+                            <td>true</td>
                             <td>Defines if background should be blocked when dialog is displayed.</td>
-                        </tr>
-                        <tr>
-                            <td>draggable</td>
-                            <td>boolean</td>
-                            <td>true</td>
-                            <td>Enables dragging to change the position using header.</td>
-                        </tr>
-                        <tr>
-                            <td>resizable</td>
-                            <td>boolean</td>
-                            <td>true</td>
-                            <td>Enables resizing of the content.</td>
-                        </tr>
-                        <tr>
-                            <td>minWidth</td>
-                            <td>number</td>
-                            <td>150</td>
-                            <td>Minimum width of a resizable dialog.</td>
-                        </tr>
-                        <tr>
-                            <td>minHeight</td>
-                            <td>number</td>
-                            <td>150</td>
-                            <td>Minimum width of a resizable dialog.</td>
                         </tr>
                         <tr>
                             <td>contentStyle</td>
@@ -221,18 +197,6 @@ const footer = (
                             <td>Adds a close icon to the header to hide the dialog.</td>
                         </tr>
                         <tr>
-                            <td>responsive</td>
-                            <td>boolean</td>
-                            <td>true</td>
-                            <td>In responsive mode, dialog adjusts itself to screen width.</td>
-                        </tr>
-                        <tr>
-                            <td>breakpoint</td>
-                            <td>number</td>
-                            <td>640</td>
-                            <td>Maximum screen width to display the dialog with 100% width in responsive mode.</td>
-                        </tr>
-                        <tr>
                             <td>style</td>
                             <td>string</td>
                             <td>null</td>
@@ -245,22 +209,16 @@ const footer = (
                             <td>Style class of the component.</td>
                         </tr>
                         <tr>
+                            <td>maskClassName</td>
+                            <td>string</td>
+                            <td>null</td>
+                            <td>Style class of the mask.</td>
+                        </tr>
+                        <tr>
                             <td>showHeader</td>
                             <td>boolean</td>
                             <td>true</td>
                             <td>Whether to show the header or not.</td>
-                        </tr>
-                        <tr>
-                            <td>positionLeft</td>
-                            <td>number</td>
-                            <td>null</td>
-                            <td>Left coordinate value of the dialog.</td>
-                        </tr>
-                        <tr>
-                            <td>positionTop</td>
-                            <td>number</td>
-                            <td>null</td>
-                            <td>Top coordinate value of the dialog.</td>
                         </tr>
                         <tr>
                             <td>appendTo</td>
@@ -275,18 +233,6 @@ const footer = (
                             <td>Base zIndex value to use in layering.</td>
                         </tr>
                         <tr>
-                            <td>minX</td>
-                            <td>number</td>
-                            <td>0</td>
-                            <td>Minimum value for the left coordinate of dialog in dragging.</td>
-                        </tr>
-                        <tr>
-                            <td>minY</td>
-                            <td>number</td>
-                            <td>0</td>
-                            <td>Minimum value for the top coordinate of dialog in dragging.</td>
-                        </tr>
-                        <tr>
                             <td>maximizable</td>
                             <td>boolean</td>
                             <td>false</td>
@@ -297,6 +243,24 @@ const footer = (
                             <td>boolean</td>
                             <td>false</td>
                             <td>Whether background scroll should be blocked when dialog is visible.</td>
+                        </tr>
+                        <tr>
+                            <td>iconsTemplate</td>
+                            <td>Element</td>
+                            <td>null</td>
+                            <td>Custom icons template for the header.</td>
+                        </tr>
+                        <tr>
+                            <td>ariaCloseIconLabel</td>
+                            <td>string</td>
+                            <td>null</td>
+                            <td>Defines a string that labels the close icon.</td>
+                        </tr>
+                        <tr>
+                            <td>focusOnShow</td>
+                            <td>boolean</td>
+                            <td>true</td>
+                            <td>When enabled, first button receives focus on show.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -315,12 +279,12 @@ const footer = (
                     <tbody>
                         <tr>
                             <td>onHide</td>
-                            <td>event: Event object</td>
+                            <td>null</td>
                             <td>Callback to invoke when dialog is hidden (Required).</td>
                         </tr>
                         <tr>
                             <td>onShow</td>
-                            <td>event: Event object</td>
+                            <td>null</td>
                             <td>Callback to invoke when dialog is showed.</td>
                         </tr>
                     </tbody>
@@ -368,7 +332,7 @@ const footer = (
                 <h3>Dependencies</h3>
                 <p>None.</p>
             </div>
-            
+
             </TabPanel>
 
             <TabPanel header="Source">
@@ -382,7 +346,7 @@ import {Dialog} from 'primereact/dialog';
 import {Button} from 'primereact/button';
 
 export class DialogDemo extends Component {
-        
+
     constructor() {
         super();
         this.state = {visible: false};
@@ -390,11 +354,11 @@ export class DialogDemo extends Component {
         this.onHide = this.onHide.bind(this);
     }
 
-    onClick(event) {
+    onClick() {
         this.setState({visible: true});
     }
 
-    onHide(event) {
+    onHide() {
         this.setState({visible: false});
     }
 
@@ -416,10 +380,10 @@ export class DialogDemo extends Component {
                 </div>
 
                 <div className="content-section implementation">
-                    <Dialog header="Godfather I" visible={this.state.visible} width="350px" modal={true} footer={footer} minY={70} onHide={this.onHide} maximizable={true} blockScroll={true}>
-                        The story begins as Don Vito Corleone, the head of a New York Mafia family, oversees his daughter's wedding. 
-                        His beloved son Michael has just come home from the war, but does not intend to become part of his father's business. 
-                        Through Michael's life the nature of the family business becomes clear. The business of the family is just like the head of the family, 
+                    <Dialog header="Godfather I" visible={this.state.visible} style={{width: '50vw'}} footer={footer} onHide={this.onHide} maximizable>
+                        The story begins as Don Vito Corleone, the head of a New York Mafia family, oversees his daughter's wedding.
+                        His beloved son Michael has just come home from the war, but does not intend to become part of his father's business.
+                        Through Michael's life the nature of the family business becomes clear. The business of the family is just like the head of the family,
                         kind and benevolent to those who give respect, but given to ruthless violence whenever anything stands against the good of the family.
                     </Dialog>
 

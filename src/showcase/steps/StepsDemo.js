@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import {Steps} from '../../components/steps/Steps';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 import {Growl} from "../../components/growl/Growl";
 import "./StepsDemo.css"
 
@@ -13,10 +14,9 @@ export class StepsDemo extends Component {
         this.state = {
             activeIndex: 1
         };
-    }
 
-    render() {
-        const items = [{
+        this.items = [
+            {
                 label: 'Personal',
                 command: (event) => {
                     this.growl.show({severity:'info', summary:'First Step', detail: event.item.label});
@@ -41,13 +41,19 @@ export class StepsDemo extends Component {
                 }
             }
         ];
+    }
 
+    render() {
         return (
             <div>
                 <div className="content-section introduction">
                     <div className="feature-intro">
                         <h1>Steps</h1>
-                        <p>Steps components is an indicator for the steps in a workflow. Layout of steps component is optimized for responsive design.</p>
+                        <p>Steps component is an indicator for the steps in a workflow. Layout of steps component is optimized for responsive design.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("steps")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
@@ -55,13 +61,13 @@ export class StepsDemo extends Component {
                     <Growl ref={(el) => {this.growl = el}}></Growl>
 
                     <h3>Basic</h3>
-                    <Steps model={items} />
+                    <Steps model={this.items} />
 
                     <h3>Interactive</h3>
-                    <Steps model={items} activeIndex={this.state.activeIndex} onSelect={(e) => this.setState({activeIndex: e.index})} readOnly={false} />
+                    <Steps model={this.items} activeIndex={this.state.activeIndex} onSelect={(e) => this.setState({activeIndex: e.index})} readOnly={false} />
 
                     <h3>Custom Style</h3>
-                    <Steps model={items} className="steps-custom" />
+                    <Steps model={this.items} className="steps-custom" />
                 </div>
 
                 <StepsDoc/>
@@ -311,10 +317,9 @@ export class StepsDemo extends Component {
         this.state = {
             activeIndex: 1
         };
-    }
 
-    render() {
-        const items = [{
+        this.items = [
+            {
                 label: 'Personal',
                 command: (event) => {
                     this.growl.show({severity:'info', summary:'First Step', detail: event.item.label});
@@ -339,13 +344,15 @@ export class StepsDemo extends Component {
                 }
             }
         ];
+    }
 
+    render() {
         return (
             <div>
                 <div className="content-section introduction">
                     <div className="feature-intro">
                         <h1>Steps</h1>
-                        <p>Steps components is an indicator for the steps in a workflow. Layout of steps component is optimized for responsive design.</p>
+                        <p>Steps component is an indicator for the steps in a workflow. Layout of steps component is optimized for responsive design.</p>
                     </div>
                 </div>
 

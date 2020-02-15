@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Tooltip from "../tooltip/Tooltip";
+import ObjectUtils from '../utils/ObjectUtils';
 
 export class Button extends Component {
 
@@ -23,19 +24,32 @@ export class Button extends Component {
 
     componentDidMount() {
         if (this.props.tooltip) {
-            this.tooltip = new Tooltip({
-                target: this.element,
-                content: this.props.tooltip,
-                options: this.props.tooltipOptions
-            });
+            this.renderTooltip();
         }
     }
 
+    componentDidUpdate(prevProps) {
+        if (prevProps.tooltip !== this.props.tooltip) {
+            if (this.tooltip)
+                this.tooltip.updateContent(this.props.tooltip);
+            else
+                this.renderTooltip();
+        }
+    }
+ 
     componentWillUnmount() {
         if (this.tooltip) {
             this.tooltip.destroy();
             this.tooltip = null;
         }
+    }
+ 
+    renderTooltip() {
+        this.tooltip = new Tooltip({
+            target: this.element,
+            content: this.props.tooltip,
+            options: this.props.tooltipOptions
+        });
     }
 
     renderIcon() {
@@ -73,12 +87,7 @@ export class Button extends Component {
         let icon = this.renderIcon();
         let label = this.renderLabel();
 
-        let buttonProps = Object.assign({}, this.props);
-        delete buttonProps.iconPos;
-        delete buttonProps.icon;
-        delete buttonProps.label;
-        delete buttonProps.tooltip;
-        delete buttonProps.tooltipOptions;
+        let buttonProps = ObjectUtils.findDiffKeys(this.props, Button.defaultProps);
 
         return (
             <button ref={(el) => this.element = el} {...buttonProps} className={className}>

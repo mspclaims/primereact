@@ -13,7 +13,7 @@ export class MultiSelectPanel extends Component {
 
     static propTypes = {
         appendTo: PropTypes.object,
-        header: PropTypes.element,
+        header: PropTypes.any,
         onClick: PropTypes.func,
         scrollHeight: PropTypes.string
     };
@@ -24,7 +24,7 @@ export class MultiSelectPanel extends Component {
                 ref={(el) => this.element = el} onClick={this.props.onClick}>
                 {this.props.header}
                 <div className="p-multiselect-items-wrapper" style={{ maxHeight: this.props.scrollHeight }}>
-                    <ul className="p-multiselect-items p-multiselect-list p-component p-reset">
+                    <ul className="p-multiselect-items p-multiselect-list p-component" role="listbox" aria-multiselectable={true}>
                         {this.props.children}
                     </ul>
                 </div>

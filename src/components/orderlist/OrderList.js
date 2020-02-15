@@ -17,11 +17,12 @@ export class OrderList extends Component {
         listStyle: null,
         responsive: false,
         dragdrop: false,
+        tabIndex: '0',
         onChange: null,
         itemTemplate: null
     }
 
-    static propsTypes = {
+    static propTypes = {
         id: PropTypes.string,
         value: PropTypes.array,
         header: PropTypes.string,
@@ -29,7 +30,8 @@ export class OrderList extends Component {
         className: PropTypes.string,
         listStyle: PropTypes.object,
         responsive: PropTypes.bool,
-        dragdrop: PropTypes.func,
+        dragdrop: PropTypes.bool,
+        tabIndex: PropTypes.string,
         onChange: PropTypes.func,
         itemTemplate: PropTypes.func
     }
@@ -41,6 +43,7 @@ export class OrderList extends Component {
         };
 
         this.onItemClick = this.onItemClick.bind(this);
+        this.onItemKeyDown = this.onItemKeyDown.bind(this);
         this.onReorder = this.onReorder.bind(this);
     }
 
@@ -65,6 +68,59 @@ export class OrderList extends Component {
             
         this.setState({selection: selection});
     }
+
+    onItemKeyDown(event) {
+        let listItem = event.originalEvent.currentTarget;
+        
+        switch(event.originalEvent.which) {
+            //down
+            case 40:
+                var nextItem = this.findNextItem(listItem);
+                if (nextItem) {
+                    nextItem.focus();
+                }
+                
+                event.originalEvent.preventDefault();
+            break;
+            
+            //up
+            case 38:
+                var prevItem = this.findPrevItem(listItem);
+                if (prevItem) {
+                    prevItem.focus();
+                }
+                
+                event.originalEvent.preventDefault();
+            break;
+            
+            //enter
+            case 13:
+                this.onItemClick(event);
+                event.originalEvent.preventDefault();
+            break;
+
+            default:
+            break;
+        }
+    }
+
+    findNextItem(item) {
+        let nextItem = item.nextElementSibling;
+
+        if (nextItem)
+            return !DomHandler.hasClass(nextItem, 'p-orderlist-item') ? this.findNextItem(nextItem) : nextItem;
+        else
+            return null;
+    }
+
+    findPrevItem(item) {
+        let prevItem = item.previousElementSibling;
+        
+        if (prevItem)
+            return !DomHandler.hasClass(prevItem, 'p-orderlist-item') ? this.findPrevItem(prevItem) : prevItem;
+        else
+            return null;
+    } 
 
     onReorder(event) {
         if (this.props.onChange) {
@@ -119,10 +175,10 @@ export class OrderList extends Component {
         return (
             <div ref={(el) => this.element = el} id={this.props.id} className={className} style={this.props.style}>
                 <OrderListControls value={this.props.value} selection={this.state.selection} onReorder={this.onReorder} />
-                <OrderListSubList ref={(el) => this.subList = el} value={this.props.value} selection={this.state.selection} onItemClick={this.onItemClick} 
+                <OrderListSubList ref={(el) => this.subList = el} value={this.props.value} selection={this.state.selection} onItemClick={this.onItemClick} onItemKeyDown={this.onItemKeyDown} 
                             itemTemplate={this.props.itemTemplate} header={this.props.header} listStyle={this.props.listStyle}
                             dragdrop={this.props.dragdrop} onDragStart={this.onDragStart} onDragEnter={this.onDragEnter} onDragEnd={this.onDragEnd} onDragLeave={this.onDragEnter} onDrop={this.onDrop}
-                            onChange={this.props.onChange} />
+                            onChange={this.props.onChange} tabIndex={this.props.tabIndex} />
             </div>
         );
     }

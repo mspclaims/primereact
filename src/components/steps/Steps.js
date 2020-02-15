@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import UniqueComponentId from '../utils/UniqueComponentId';
 
 export class Steps extends Component {
 
@@ -23,6 +24,12 @@ export class Steps extends Component {
         className: PropTypes.string,
         onSelect: PropTypes.func
     };
+
+    constructor(props) {
+        super(props);
+
+        this.id = this.props.id || UniqueComponentId();
+    }
 
     itemClick(event, item, index) {
         if (this.props.readOnly || item.disabled) {
@@ -51,15 +58,43 @@ export class Steps extends Component {
         }
     }
 
+    createStyle() {
+        if (!this.stepsStyle) {
+            this.stepsStyle = document.createElement('style');
+            this.stepsStyle.type = 'text/css';
+            document.body.appendChild(this.stepsStyle);
+        }
+
+        let innerHTML = `
+            #${this.id} .p-steps-item {
+                flex: 1 0 ${ (100/ this.props.model.length) }%
+            }
+        `;
+
+        this.stepsStyle.innerHTML = innerHTML;
+    }
+
+    componentDidMount() {
+        this.createStyle();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.model !== this.props.model) {
+            this.createStyle();
+        }
+    }
+
     renderItem(item, index) {
+        const isDisabled = (item.disabled || (index !== this.props.activeIndex && this.props.readOnly))
         const className = classNames('p-steps-item', item.className, {
-                'p-highlight p-steps-current': (index === this.props.activeIndex), 
+                'p-highlight p-steps-current': (index === this.props.activeIndex),
                 'p-state-default': (index !== this.props.activeIndex),
-                'p-disabled': (item.disabled || (index !== this.props.activeIndex && this.props.readOnly))});
-        
+                'p-disabled': isDisabled
+            });
+
         return (
-            <li key={item.label + '_' + index} className={className} style={item.style}>
-                <a href={item.url || '#'} className="p-menuitem-link" target={item.target} onClick={event => this.itemClick(event, item, index)}>
+            <li key={item.label + '_' + index} className={className} style={item.style} role="tab" aria-selected={index === this.props.activeIndex} aria-expanded={index === this.props.activeIndex}>
+                <a href={item.url || '#'} className="p-menuitem-link" role="presentation" target={item.target} onClick={event => this.itemClick(event, item, index)} tabIndex={isDisabled ? -1 : ''}>
                     <span className="p-steps-number">{index + 1}</span>
                     <span className="p-steps-title">{item.label}</span>
                 </a>
@@ -89,7 +124,7 @@ export class Steps extends Component {
         const items = this.renderItems();
 
         return (
-            <div id={this.props.id} className={className} style={this.props.style}>
+            <div id={this.id} className={className} style={this.props.style}>
                 {items}
             </div>
         );

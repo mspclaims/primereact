@@ -3,12 +3,16 @@ import {Link} from 'react-router-dom';
 import {Checkbox} from '../../components/checkbox/Checkbox';
 import {TabView,TabPanel} from '../../components/tabview/TabView';
 import {CodeHighlight} from '../codehighlight/CodeHighlight';
+import AppContentContext from '../../AppContentContext';
 
 export class CheckboxDemo extends Component {
-        
+
     constructor() {
         super();
-        this.state = {cities: []};
+        this.state = {
+            checked: false,
+            cities: []
+        };
         this.onCityChange = this.onCityChange.bind(this);
     }
 
@@ -30,25 +34,34 @@ export class CheckboxDemo extends Component {
                     <div className="feature-intro">
                         <h1>Checkbox</h1>
                         <p>Checkbox is an extension to standard checkbox element with skinning capabilities.</p>
+
+                        <AppContentContext.Consumer>
+                            { context => <button onClick={() => context.onChangelogBtnClick("checkbox")} className="layout-changelog-button">{context.changelogText}</button> }
+                        </AppContentContext.Consumer>
                     </div>
                 </div>
 
                 <div className="content-section implementation">
-                    <div className="p-grid" style={{width:'250px',marginBottom:'10px'}}>
+                    <h3 className="first">Single</h3>
+                    <Checkbox checked={this.state.checked} onChange={e => this.setState({checked: e.checked})} />
+                    <p>Checked: <span style={{fontWeight: 'bold'}}>{this.state.checked ? 'true' : 'false'}</span></p>
+
+                    <h3>Multiple</h3>
+                    <div className="p-grid" style={{width:'250px'}}>
                         <div className="p-col-12">
-                            <Checkbox inputId="cb1" value="New York" onChange={this.onCityChange} checked={this.state.cities.includes('New York')}></Checkbox>
+                            <Checkbox inputId="cb1" value="New York" onChange={this.onCityChange} checked={this.state.cities.indexOf('New York') !== -1}></Checkbox>
                             <label htmlFor="cb1" className="p-checkbox-label">New York</label>
                         </div>
                         <div className="p-col-12">
-                            <Checkbox inputId="cb2" value="San Francisco" onChange={this.onCityChange} checked={this.state.cities.includes('San Francisco')}></Checkbox>
+                            <Checkbox inputId="cb2" value="San Francisco" onChange={this.onCityChange} checked={this.state.cities.indexOf('San Francisco') !== -1}></Checkbox>
                             <label htmlFor="cb2" className="p-checkbox-label">San Francisco</label>
                         </div>
                         <div className="p-col-12">
-                            <Checkbox inputId="cb3" value="Los Angeles" onChange={this.onCityChange} checked={this.state.cities.includes('Los Angeles')}></Checkbox>
+                            <Checkbox inputId="cb3" value="Los Angeles" onChange={this.onCityChange} checked={this.state.cities.indexOf('Los Angeles') !== -1}></Checkbox>
                             <label htmlFor="cb3" className="p-checkbox-label">Los Angeles</label>
                         </div>
                     </div>
-                    Selected Cities : {this.state.cities.map((city) => <span key={city}>{city} </span>)}
+                    <p>Selected Cities : {this.state.cities.map((city) => <span style={{fontWeight: 'bold'}} key={city}>{city} </span>)}</p>
                 </div>
 
                 <CheckboxDoc />
@@ -80,13 +93,13 @@ import {Checkbox} from 'primereact/checkbox';
                         <p>Checkbox is used as a controlled input with <i>checked</i> and <i>onChange</i> properties.</p>
 <CodeHighlight className="language-jsx">
 {`
-<Checkbox onChange={this.onChange} checked={this.state.checked}></Checkbox>
+<Checkbox onChange={e => this.setState({checked: e.checked})} checked={this.state.checked}></Checkbox>
 
 `}
 </CodeHighlight>
 
                         <h3>Multiple Values</h3>
-                        <p>Multiple checkboxes can be grouped by controllimng against a list of values.</p>
+                        <p>Multiple checkboxes can be grouped using a list of values.</p>
 <CodeHighlight className="language-jsx">
 {`
 <div className="p-col-12">
@@ -189,6 +202,12 @@ onCityChange(e) {
                                     <td>When present, it specifies that the element value cannot be altered.</td>
                                 </tr>
                                 <tr>
+                                    <td>required</td>
+                                    <td>boolean</td>
+                                    <td>false</td>
+                                    <td>When present, it specifies that an input field must be filled out before submitting the form.</td>
+                                </tr>
+                                <tr>
                                     <td>readOnly</td>
                                     <td>boolean</td>
                                     <td>false</td>
@@ -205,6 +224,12 @@ onCityChange(e) {
                                     <td>object</td>
                                     <td>null</td>
                                     <td>Configuration of the tooltip, refer to the tooltip documentation for more information.</td>
+                                </tr>
+                                <tr>
+                                    <td>ariaLabelledBy</td>
+                                    <td>string</td>
+                                    <td>null</td>
+                                    <td>Establishes relationships between the component and label(s) where its value should be one or more element IDs.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -286,16 +311,19 @@ import React, {Component} from 'react';
 import {Checkbox} from 'primereact/checkbox';
 
 export class CheckboxDemo extends Component {
-        
+
     constructor() {
         super();
-        this.state = {cities: []};
+        this.state = {
+            checked: false,
+            cities: []
+        };
         this.onCityChange = this.onCityChange.bind(this);
     }
 
     onCityChange(e) {
         let selectedCities = [...this.state.cities];
-        
+
         if(e.checked)
             selectedCities.push(e.value);
         else
@@ -315,21 +343,26 @@ export class CheckboxDemo extends Component {
                 </div>
 
                 <div className="content-section implementation">
-                    <div className="p-grid" style={{width:'250px',marginBottom:'10px'}}>
+                    <h3 className="first">Single</h3>
+                    <Checkbox checked={this.state.checked} onChange={e => this.setState({checked: e.checked})} />
+                    <p>Checked: <span style={{fontWeight: 'bold'}}>{this.state.checked ? 'true' : 'false'}</span></p>
+
+                    <h3>Multiple</h3>
+                    <div className="p-grid" style={{width:'250px'}}>
                         <div className="p-col-12">
-                            <Checkbox inputId="cb1" value="New York" onChange={this.onCityChange} checked={this.state.cities.includes('New York')}></Checkbox>
+                            <Checkbox inputId="cb1" value="New York" onChange={this.onCityChange} checked={this.state.cities.indexOf('New York') !== -1}></Checkbox>
                             <label htmlFor="cb1" className="p-checkbox-label">New York</label>
                         </div>
                         <div className="p-col-12">
-                            <Checkbox inputId="cb2" value="San Francisco" onChange={this.onCityChange} checked={this.state.cities.includes('San Francisco')}></Checkbox>
+                            <Checkbox inputId="cb2" value="San Francisco" onChange={this.onCityChange} checked={this.state.cities.indexOf('San Francisco') !== -1}></Checkbox>
                             <label htmlFor="cb2" className="p-checkbox-label">San Francisco</label>
                         </div>
                         <div className="p-col-12">
-                            <Checkbox inputId="cb3" value="Los Angeles" onChange={this.onCityChange} checked={this.state.cities.includes('Los Angeles')}></Checkbox>
+                            <Checkbox inputId="cb3" value="Los Angeles" onChange={this.onCityChange} checked={this.state.cities.indexOf('Los Angeles') !== -1}></Checkbox>
                             <label htmlFor="cb3" className="p-checkbox-label">Los Angeles</label>
                         </div>
                     </div>
-                    Selected Cities : {this.state.cities.map((city) => <span key={city}>{city} </span>)}
+                    <p>Selected Cities : {this.state.cities.map((city) => <span style={{fontWeight: 'bold'}} key={city}>{city} </span>)}</p>
                 </div>
             </div>
         )

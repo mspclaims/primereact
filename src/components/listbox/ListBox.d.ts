@@ -14,8 +14,10 @@ interface ListBoxProps {
     multiple?: boolean;
     metaKeySelection?: boolean;
     filter?: boolean;
+    tabIndex?:string;
     tooltip?: any;
     tooltipOptions?: TooltipOptions;
+    ariaLabelledBy?: string,
     itemTemplate?(item: any): JSX.Element | undefined;
     onChange?(e: {originalEvent: Event, value: any}): void;
 }
